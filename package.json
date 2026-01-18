@@ -1,0 +1,13 @@
+{
+  "name": "fool-db",
+  "version": "1.0.0",
+  "main": "fooldb.js",
+  "scripts": {
+    "dev": "npx nodemon -w 'fool-db.js' -w 'test.js' -e 'js' -x 'npm test'",
+    "test": "node test.js"
+  },
+  "keywords": [],
+  "author": "allnulled",
+  "license": "WTFPL",
+  "description": ""
+}
