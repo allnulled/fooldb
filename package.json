@@ -5,8 +5,8 @@
   "scripts": {
     "up": "bash gitup.sh",
     "build:docs": "node build/build-docs.js",
-    "dev": "npx nodemon -w 'fooldb.js' -w 'lib' -w 'test.js' -e 'js' -x 'npm test'",
-    "test": "node test.js"
+    "dev": "npx nodemon -w 'fooldb.js' -w 'lib' -w 'test/test.js' -e 'js' -x 'npm test'",
+    "test": "node test/test.js"
   },
   "keywords": [],
   "author": "allnulled",

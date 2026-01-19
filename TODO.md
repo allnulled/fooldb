@@ -1,0 +1,7 @@
+- [ ] Permitir nuevos tipos avanzados:
+   - [ ] reference-object
+   - [ ] reference-array
+   - [ ] reference-query
+- [ ] Permitir columnas tipo "createdAt" y "updatedAt"
+- [ ] Persistencia de funciones
+   - [ ] personalizar un stringify que soporte funciones
