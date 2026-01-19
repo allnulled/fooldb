@@ -2,7 +2,7 @@
  * 
  * # API de Fooldb
  * 
- * A continuación se documenta la API de Fooldb.
+ * {{ TOC }}
  * 
  */
 const fs = require("fs");

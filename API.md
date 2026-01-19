@@ -1,6 +1,37 @@
 # API de Fooldb
 
-A continuación se documenta la API de Fooldb.
+1. [API de Fooldb](#api-de-fooldb)
+  1. [`Fooldb.AssertionError:Error`](#fooldbassertionerrorerror)
+  1. [`Fooldb.assertion(condition:Boolean, message:String)`](#fooldbassertionconditionboolean-messagestring)
+  1. [`Fooldb.ConstraintError:Error`](#fooldbconstrainterrorerror)
+  1. [`Fooldb.MultipleConstraintErrors:Array`](#fooldbmultipleconstrainterrorsarray)
+  1. [`Fooldb.MultipleConstraintErrors.prototype.assertion(condition:Boolean, message:String)`](#fooldbmultipleconstrainterrorsprototypeassertionconditionboolean-messagestring)
+  1. [`Fooldb.MultipleConstraintErrors.prototype.throwIfAny()`](#fooldbmultipleconstrainterrorsprototypethrowifany)
+  1. [`Fooldb.MultipleConstraintErrors.prototype.throwIfAnyExcept(errorStartingWith:String)`](#fooldbmultipleconstrainterrorsprototypethrowifanyexcepterrorstartingwithstring)
+  1. [`Fooldb`](#fooldb)
+  1. [`Fooldb.create(...args)`](#fooldbcreateargs)
+  1. [`Fooldb.defaultOptions:Object`](#fooldbdefaultoptionsobject)
+  1. [`Fooldb.uuidAlphabet:Array<String>`](#fooldbuuidalphabetarraystring)
+  1. [`Fooldb.generateUuid(len:Number = 10)`](#fooldbgenerateuuidlennumber-10)
+  1. [`Fooldb.basicTypes:Array<String>`](#fooldbbasictypesarraystring)
+  1. [`Fooldb.isValidDay(text:String):Boolean`](#fooldbisvaliddaytextstringboolean)
+  1. [`Fooldb.isValidHour(text:String):Boolean`](#fooldbisvalidhourtextstringboolean)
+  1. [`Fooldb.isValidMoment(text:String):Boolean`](#fooldbisvalidmomenttextstringboolean)
+  1. [`async Fooldb.$cleanStreams(readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`](#async-fooldbcleanstreamsreadstreamreaderstream-writestreamwriterstream-tmpfilestring)
+  1. [`Fooldb.prototype.$trace(message:String)`](#fooldbprototypetracemessagestring)
+  1. [`Fooldb.constructor(basedir:String, options:Object = {})`](#fooldbconstructorbasedirstring-optionsobject-)
+  1. [`Fooldb.prototype.composePath(...subpaths:Array<String>)`](#fooldbprototypecomposepathsubpathsarraystring)
+  1. [`Fooldb.prototype.$loadSchemaFromBasedir()`](#fooldbprototypeloadschemafrombasedir)
+  1. [`async Fooldb.prototype.$checkTableValueBySchema(table:String, value:Object, operation:String):MultipleConstraintErrors`](#async-fooldbprototypechecktablevaluebyschematablestring-valueobject-operationstringmultipleconstrainterrors)
+  1. [`async Fooldb.prototype.$pickNextId(table:String):String`](#async-fooldbprototypepicknextidtablestringstring)
+  1. [`Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`](#fooldbprototypeexistsnodefileordirectorystringboolean)
+  1. [`async Fooldb.prototype.ensureTable(table:String)`](#async-fooldbprototypeensuretabletablestring)
+  1. [`async Fooldb.prototype.emptyTable(table:String)`](#async-fooldbprototypeemptytabletablestring)
+  1. [`async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`](#async-fooldbprototypeselecttablestring-filterfunctionarrayobject)
+  1. [`Fooldb.prototype.initialize(table:String, value:Object)`](#fooldbprototypeinitializetablestring-valueobject)
+  1. [`Fooldb.prototype.insert(table:String, value:Object):String`](#fooldbprototypeinserttablestring-valueobjectstring)
+  1. [`Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`](#fooldbprototypeupdatetablestring-filterfunction-valueobjectarrayinteger)
+  1. [`Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`](#fooldbprototypedeletetablestring-filterfunctionarrayinteger)
 
 ## `Fooldb.AssertionError:Error`
 
