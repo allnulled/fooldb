@@ -24,14 +24,14 @@
   22. [`Fooldb.prototype.$loadSchemaFromBasedir()`](#fooldbprototypeloadschemafrombasedir)
   23. [`async Fooldb.prototype.$checkTableValueBySchema(table:String, value:Object, operation:String):MultipleConstraintErrors`](#async-fooldbprototypechecktablevaluebyschematablestring-valueobject-operationstringmultipleconstrainterrors)
   24. [`async Fooldb.prototype.$pickNextId(table:String):String`](#async-fooldbprototypepicknextidtablestringstring)
-  25. [`Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`](#fooldbprototypeexistsnodefileordirectorystringboolean)
+  25. [`async Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`](#async-fooldbprototypeexistsnodefileordirectorystringboolean)
   26. [`async Fooldb.prototype.ensureTable(table:String)`](#async-fooldbprototypeensuretabletablestring)
   27. [`async Fooldb.prototype.emptyTable(table:String)`](#async-fooldbprototypeemptytabletablestring)
   28. [`async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`](#async-fooldbprototypeselecttablestring-filterfunctionarrayobject)
-  29. [`Fooldb.prototype.initialize(table:String, value:Object)`](#fooldbprototypeinitializetablestring-valueobject)
-  30. [`Fooldb.prototype.insert(table:String, value:Object):String`](#fooldbprototypeinserttablestring-valueobjectstring)
-  31. [`Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`](#fooldbprototypeupdatetablestring-filterfunction-valueobjectarrayinteger)
-  32. [`Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`](#fooldbprototypedeletetablestring-filterfunctionarrayinteger)
+  29. [`async Fooldb.prototype.initialize(table:String, value:Object)`](#async-fooldbprototypeinitializetablestring-valueobject)
+  30. [`async Fooldb.prototype.insert(table:String, value:Object):String`](#async-fooldbprototypeinserttablestring-valueobjectstring)
+  31. [`async Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`](#async-fooldbprototypeupdatetablestring-filterfunction-valueobjectarrayinteger)
+  32. [`async Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`](#async-fooldbprototypedeletetablestring-filterfunctionarrayinteger)
 
 ## `Fooldb.AssertionError:Error`
 
@@ -183,7 +183,7 @@ Método que:
  - Lo incrementa y lo persiste
  - Devuelve el `uid` sacado.
 
-## `Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`
+## `async Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`
 
 **Uso interno solamente.**
 
@@ -207,23 +207,23 @@ Método select de una tabla.
 
 La función `filter` solo recibe el `row:Object`.
 
-## `Fooldb.prototype.initialize(table:String, value:Object)`
+## `async Fooldb.prototype.initialize(table:String, value:Object)`
 
 Este método es un insert con silencios.
 
 Lo único que si solo lanza errores de duplicación, no propaga el error, simplemente devuelve `false` y no inserta nada.
 
-## `Fooldb.prototype.insert(table:String, value:Object):String`
+## `async Fooldb.prototype.insert(table:String, value:Object):String`
 
 Método para insertar una row en una tabla. Hará las comprobaciones pertinentes de constricción de esquema antes.
 
-## `Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`
+## `async Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`
 
 Método para actualizar registros de una tabla.
 
 Devuelve los `uid:Integer` alterados por la operación.
 
-## `Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`
+## `async Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`
 
 Método para eliminar registros de una tabla.
 

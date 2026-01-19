@@ -470,7 +470,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ## `Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`
+   * ## `async Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`
    * 
    * **Uso interno solamente.**
    * 
@@ -567,7 +567,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ## `Fooldb.prototype.initialize(table:String, value:Object)`
+   * ## `async Fooldb.prototype.initialize(table:String, value:Object)`
    * 
    * Este método es un insert con silencios.
    * 
@@ -595,7 +595,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ## `Fooldb.prototype.insert(table:String, value:Object):String`
+   * ## `async Fooldb.prototype.insert(table:String, value:Object):String`
    * 
    * Método para insertar una row en una tabla. Hará las comprobaciones pertinentes de constricción de esquema antes.
    * 
@@ -616,7 +616,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ## `Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`
+   * ## `async Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`
    * 
    * Método para actualizar registros de una tabla.
    * 
@@ -666,7 +666,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ## `Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`
+   * ## `async Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`
    * 
    * Método para eliminar registros de una tabla.
    * 
