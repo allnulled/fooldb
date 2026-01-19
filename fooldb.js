@@ -1,21 +1,8 @@
 /**
  * 
- * # fooldb
+ * # API de Fooldb
  * 
- * Base de datos basada en node.js y jsonl.
- * 
- * ## Instalación
- * 
- * ```sh
- * git clone https://github.com/allnulled/fooldb.git .
- * npm install
- * ```
- * 
- * ## Uso
- * 
- * Para ver más, puedes mirar el [test.js](https://github.com/allnulled/fooldb/blob/main/test.js)
- * 
- * ## Referencia
+ * A continuación se documenta la API de Fooldb.
  * 
  */
 const fs = require("fs");
@@ -23,7 +10,7 @@ const path = require("path");
 
 /**
  * 
- * ### `Fooldb.AssertionError:Error`
+ * ## `Fooldb.AssertionError:Error`
  * 
  * **Uso interno solamente.**
  * 
@@ -39,7 +26,7 @@ const AssertionError = class extends Error {
 
 /**
  * 
- * ### `Fooldb.assertion(condition:Boolean, message:String)`
+ * ## `Fooldb.assertion(condition:Boolean, message:String)`
  * 
  * **Uso interno solamente.**
  * 
@@ -52,7 +39,7 @@ const assertion = function (condition, message) {
 
 /**
  * 
- * ### `Fooldb.ConstraintError:Error`
+ * ## `Fooldb.ConstraintError:Error`
  * 
  * **Uso interno solamente.**
  * 
@@ -68,7 +55,7 @@ const ConstraintError = class extends Error {
 
 /**
  * 
- * ### `Fooldb.MultipleConstraintErrors:Array`
+ * ## `Fooldb.MultipleConstraintErrors:Array`
  * 
  * **Uso interno solamente.**
  * 
@@ -79,7 +66,7 @@ const MultipleConstraintErrors = class extends Array {
 
   /**
    * 
-   * ### `Fooldb.MultipleConstraintErrors.prototype.assertion(condition:Boolean, message:String)`
+   * ## `Fooldb.MultipleConstraintErrors.prototype.assertion(condition:Boolean, message:String)`
    * 
    * **Uso interno solamente.**
    * 
@@ -93,7 +80,7 @@ const MultipleConstraintErrors = class extends Array {
 
   /**
    * 
-   * ### `Fooldb.MultipleConstraintErrors.prototype.throwIfAny()`
+   * ## `Fooldb.MultipleConstraintErrors.prototype.throwIfAny()`
    * 
    * **Uso interno solamente.**
    * 
@@ -109,7 +96,7 @@ const MultipleConstraintErrors = class extends Array {
 
   /**
    * 
-   * ### `Fooldb.MultipleConstraintErrors.prototype.throwIfAnyExcept(errorStartingWith:String)`
+   * ## `Fooldb.MultipleConstraintErrors.prototype.throwIfAnyExcept(errorStartingWith:String)`
    * 
    * **Uso interno solamente.**
    * 
@@ -139,7 +126,7 @@ const MultipleConstraintErrors = class extends Array {
 
 /**
  * 
- * ### `Fooldb`
+ * ## `Fooldb`
  * 
  * Clase principal de la que cuelga toda la API del framework.
  * 
@@ -156,7 +143,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.create(...args)`
+   * ## `Fooldb.create(...args)`
    * 
    * Llama internamente al constructor.
    * 
@@ -167,7 +154,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.defaultOptions:Object`
+   * ## `Fooldb.defaultOptions:Object`
    * 
    * **Uso interno solamente.**
    * 
@@ -188,7 +175,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.uuidAlphabet:Array<String>`
+   * ## `Fooldb.uuidAlphabet:Array<String>`
    * 
    * **Uso interno solamente.**
    * 
@@ -199,7 +186,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.generateUuid(len:Number = 10)`
+   * ## `Fooldb.generateUuid(len:Number = 10)`
    * 
    * **Uso interno solamente.**
    * 
@@ -216,7 +203,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.basicTypes:Array<String>`
+   * ## `Fooldb.basicTypes:Array<String>`
    * 
    * **Uso interno solamente.**
    * 
@@ -227,7 +214,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.isValidDay(text:String):Boolean`
+   * ## `Fooldb.isValidDay(text:String):Boolean`
    * 
    * Método que comprueba si un texto es un **día válido**. El formato es: `AAAA/MM/DD`.
    * 
@@ -238,7 +225,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.isValidHour(text:String):Boolean`
+   * ## `Fooldb.isValidHour(text:String):Boolean`
    * 
    * Método que comprueba si un texto es una **hora válida**. El formato es: `HH:mm:ss`.
    * 
@@ -249,7 +236,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.isValidMoment(text:String):Boolean`
+   * ## `Fooldb.isValidMoment(text:String):Boolean`
    * 
    * Método que comprueba si un texto es una **hora válida**. El formato es: `AAAA/MM/DD HH:mm:ss`.
    * 
@@ -260,7 +247,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `async Fooldb.$cleanStreams(readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`
+   * ## `async Fooldb.$cleanStreams(readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`
    * 
    * **Uso interno solamente.**
    * 
@@ -281,7 +268,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.prototype.$trace(message:String)`
+   * ## `Fooldb.prototype.$trace(message:String)`
    * 
    * **Uso interno solamente.**
    * 
@@ -296,7 +283,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.constructor(basedir:String, options:Object = {})`
+   * ## `Fooldb.constructor(basedir:String, options:Object = {})`
    * 
    * Método constructor.
    * 
@@ -316,7 +303,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.prototype.composePath(...subpaths:Array<String>)`
+   * ## `Fooldb.prototype.composePath(...subpaths:Array<String>)`
    * 
    * Método para construir rutas relativas a `this.basedir`.
    * 
@@ -328,7 +315,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.prototype.$loadSchemaFromBasedir()`
+   * ## `Fooldb.prototype.$loadSchemaFromBasedir()`
    * 
    * Método que carga el `${this.basedir}/schema.js` (de haberlo, si no falla silenciosamente) utilizando `require`. Borra el caché antes.
    * 
@@ -348,7 +335,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `async Fooldb.prototype.$checkTableValueBySchema(table:String, value:Object, operation:String):MultipleConstraintErrors`
+   * ## `async Fooldb.prototype.$checkTableValueBySchema(table:String, value:Object, operation:String):MultipleConstraintErrors`
    * 
    * **Uso interno solamente.**
    * 
@@ -459,7 +446,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `async Fooldb.prototype.$pickNextId(table:String):String`
+   * ## `async Fooldb.prototype.$pickNextId(table:String):String`
    * 
    * **Uso interno solamente.**
    * 
@@ -483,7 +470,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`
+   * ## `Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`
    * 
    * **Uso interno solamente.**
    * 
@@ -502,7 +489,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `async Fooldb.prototype.ensureTable(table:String)`
+   * ## `async Fooldb.prototype.ensureTable(table:String)`
    * 
    * Método que inicializa:
    * 
@@ -538,7 +525,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `async Fooldb.prototype.emptyTable(table:String)`
+   * ## `async Fooldb.prototype.emptyTable(table:String)`
    * 
    * Método que vacía una tabla, sobreescribiendo en blanco el `${this.basedir}/data/${table}/data.jsonl`.
    * 
@@ -551,7 +538,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`
+   * ## `async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`
    * 
    * Método select de una tabla.
    * 
@@ -580,7 +567,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.prototype.initialize(table:String, value:Object)`
+   * ## `Fooldb.prototype.initialize(table:String, value:Object)`
    * 
    * Este método es un insert con silencios.
    * 
@@ -608,7 +595,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.prototype.insert(table:String, value:Object):String`
+   * ## `Fooldb.prototype.insert(table:String, value:Object):String`
    * 
    * Método para insertar una row en una tabla. Hará las comprobaciones pertinentes de constricción de esquema antes.
    * 
@@ -629,7 +616,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`
+   * ## `Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`
    * 
    * Método para actualizar registros de una tabla.
    * 
@@ -679,7 +666,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ### `Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`
+   * ## `Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`
    * 
    * Método para eliminar registros de una tabla.
    * 
@@ -724,11 +711,3 @@ const Fooldb = class {
 };
 
 module.exports = Fooldb;
-
-/**
- * 
- * ## Más información
- * 
- * Para más información, puedes consultar los tests.
- * 
- */
