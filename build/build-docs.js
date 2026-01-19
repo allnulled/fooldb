@@ -4,6 +4,7 @@ const generateTOCFromMarkdown = function (mdText) {
   const lines = mdText.split(/\r?\n/);
   const toc = [];
   const headingRegex = /^(#{1,6})\s+(.*)$/; // Coincide con # H1, ## H2, etc.
+  let index = 1;
   for (const line of lines) {
     const match = line.match(headingRegex);
     if (match) {
@@ -13,8 +14,8 @@ const generateTOCFromMarkdown = function (mdText) {
       const anchor = title.toLowerCase()
         .replace(/[^\w\s-]/g, "")  // quita caracteres raros
         .replace(/\s+/g, "-");     // espacios -> guiones
-      const indent = "  ".repeat(level - 1);
-      toc.push(`${indent}1. [${title}](#${anchor})`);
+      const indent = "   ".repeat(level - 1);
+      toc.push(`${indent}${index++}. [${title}](#${anchor})`);
     }
   }
   return toc.join("\n");
