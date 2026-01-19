@@ -3,11 +3,16 @@
   "version": "1.0.0",
   "main": "fooldb.js",
   "scripts": {
+    "up": "bash gitup.sh",
+    "build:docs": "node build/build-docs.js",
     "dev": "npx nodemon -w 'fooldb.js' -w 'lib' -w 'test.js' -e 'js' -x 'npm test'",
     "test": "node test.js"
   },
   "keywords": [],
   "author": "allnulled",
   "license": "WTFPL",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@allnulled/javadoc-brute": "^1.0.4"
+  }
 }

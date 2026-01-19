@@ -4,7 +4,7 @@ module.exports = {
       columns: {
         "nombre": { type: "string", unique: true, required: true },
         "edad": { type: "number", required: true },
-        "fecha de nacimiento": { type: "string", required: true },
+        "fecha de nacimiento": { type: "day", required: true },
       }
     }
   }
