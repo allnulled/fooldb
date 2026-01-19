@@ -14,7 +14,7 @@ const generateTOCFromMarkdown = function (mdText) {
       const anchor = title.toLowerCase()
         .replace(/[^\w\s-]/g, "")  // quita caracteres raros
         .replace(/\s+/g, "-");     // espacios -> guiones
-      const indent = "   ".repeat(level - 1);
+      const indent = "  ".repeat(level - 1);
       toc.push(`${indent}${index++}. [${title}](#${anchor})`);
     }
   }
