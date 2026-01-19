@@ -8,6 +8,24 @@ const AssertionError = class extends Error {
   }
 };
 
+const ConstraintError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "ConstraintError";
+  }
+};
+
+const MultipleConstraintErrors = class extends Array {
+  assertion(condition, message) {
+    if(!condition) this.push(message);
+  }
+  throwIfAny() {
+    if(this.length) {
+      throw new ConstraintError(JSON.stringify(this, null, 2));
+    }
+  }
+};
+
 const assertion = function (condition, message) {
   if (!condition) throw new AssertionError(message);
 };
@@ -21,7 +39,7 @@ const Fooldb = class {
   static defaultOptions = {
     forceSchema: true,
     trace: true
-  }
+  };
 
   static uidAlphabet = "abcdefghijklmnopqrstuvwxyz".split("");
 
@@ -31,6 +49,18 @@ const Fooldb = class {
       uid += this.uidAlphabet[Math.floor(Math.random() * this.uidAlphabet.length)];
     }
     return uid;
+  }
+
+  static async $cleanStreams(readStream, writeStream, readline) {
+    try {
+      if (writeStream && !writeStream.closed) writeStream.destroy();
+      if (readStream && !readStream.closed) readStream.destroy();
+      if (await this.$existsNode(tmpFile)) {
+        await fs.promises.unlink(tmpFile);
+      }
+    } catch (_) {
+      // Silenciar: limpieza best-effort
+    }
   }
 
   $trace(message) {
@@ -79,6 +109,8 @@ const Fooldb = class {
     // Column definitions:
     const columnDefinitions = this.schema.tables[table].columns;
     const columnIds = Object.keys(columnDefinitions);
+    // Prepare MultipleConstraintErrors instance:
+    const constraintErrors = new MultipleConstraintErrors();
     // Iterate columns:
     for (let index = 0; index < columnIds.length; index++) {
       const columnId = columnIds[index];
@@ -97,7 +129,7 @@ const Fooldb = class {
         }
         // Comprobación del require:
         const hasColumn = typeof value[columnId] !== "undefined";
-        assertion(hasColumn, `Schema constraint «required» requires column «${table}.${columnId}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+        constraintErrors.assertion(hasColumn, `Schema constraint «required» requires column «${table}.${columnId}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
       }
       Checking_type: {
         // Si no fuerza el tipo, salta el paso:
@@ -107,20 +139,20 @@ const Fooldb = class {
         // Si no es requerido y...
         if (!isRequired) {
           // ...tampoco es definido, salta el paso:
-          if(typeof value[columnId] === "undefined") {
+          if (typeof value[columnId] === "undefined") {
             break Checking_type;
           }
         }
         // Si es un update y...
         if (operation === "updating") {
           // ...tampoco es definido, salta el paso:
-          if(typeof value[columnId] === "undefined") {
+          if (typeof value[columnId] === "undefined") {
             break Checking_type;
           }
         }
         // Comprobación del tipo:
         const matchesType = typeof value[columnId] === mustBeType;
-        assertion(matchesType, `Schema constraint «type» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+        constraintErrors.assertion(matchesType, `Schema constraint «type» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
       }
       Checking_unique: {
         if (!mustBeUnique) {
@@ -135,10 +167,11 @@ const Fooldb = class {
             continue Iterating_rows;
           }
           const matchesValue = row[columnId] === value[columnId];
-          assertion(!matchesValue, `Schema constraint «unique» is avoiding to duplicate «${table}#${row.uid}.${columnId}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+          constraintErrors.assertion(!matchesValue, `Schema constraint «unique» is avoiding to duplicate «${table}#${row.uid}.${columnId}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
         }
       }
     }
+    constraintErrors.throwIfAny();
   }
 
   async $pickNextId(table) {
@@ -223,15 +256,15 @@ const Fooldb = class {
    */
   async initialize(table, value) {
     this.$trace("Fooldb.prototype.initialize");
-    try {
-      await this.insert(table, value);
-      return true;
-    } catch (error) {
-      if (error.message.startsWith("Schema constraint «unique»")) {
-        return false;
-      }
-      throw error;
-    }
+    assertion(typeof table === "string", "Parameter «table» must be «string» on «Fooldb.prototype.initialize»");
+    assertion((typeof value === "object") && (value !== null), "Parameter «value» must be «object» on «Fooldb.prototype.initialize»");
+    await this.$checkTableValueBySchema(table, value, "initializing");
+    const file = this.$composePath(`data/${table}/data.jsonl`);
+    const uid = await this.$pickNextId(table);
+    const record = Object.assign({}, value, { uid });
+    const line = JSON.stringify(record) + "\n";
+    await fs.promises.appendFile(file, line, "utf8");
+    return uid;
   }
 
   async insert(table, value) {
@@ -257,27 +290,34 @@ const Fooldb = class {
     const file = this.$composePath(`data/${table}/data.jsonl`);
     const tmpFile = this.$composePath(`data/${table}/temporary-${uuid}.jsonl`);
     const updatedUids = [];
-    const readStream = fs.createReadStream(file, { encoding: "utf8" });
-    const writeStream = fs.createWriteStream(tmpFile, { encoding: "utf8" });
-    const readline = require("readline").createInterface({
-      input: readStream,
-      crlfDelay: Infinity
-    });
-    Iterating_rows:
-    for await (const line of readline) {
-      if (!line.trim()) continue Iterating_rows;
-      const obj = JSON.parse(line);
-      if (filter(obj)) {
-        const updated = Object.assign({}, obj, value);
-        updatedUids.push(updated.uid);
-        writeStream.write(JSON.stringify(updated) + "\n");
-      } else {
-        writeStream.write(line + "\n");
+    let writeStream;
+    let readStream;
+    let readline;
+    try {
+      readStream = fs.createReadStream(file, { encoding: "utf8" });
+      writeStream = fs.createWriteStream(tmpFile, { encoding: "utf8" });
+      readline = require("readline").createInterface({
+        input: readStream,
+        crlfDelay: Infinity
+      });
+      Iterating_rows:
+      for await (const line of readline) {
+        if (!line.trim()) continue Iterating_rows;
+        const obj = JSON.parse(line);
+        if (filter(obj)) {
+          const updated = Object.assign({}, obj, value);
+          updatedUids.push(updated.uid);
+          writeStream.write(JSON.stringify(updated) + "\n");
+        } else {
+          writeStream.write(line + "\n");
+        }
       }
+      await new Promise(resolve => writeStream.end(resolve));
+      await fs.promises.rename(tmpFile, file);
+      return updatedUids;
+    } finally {
+      await this.constructor.$cleanStreams(readStream, writeStream, readline);
     }
-    await new Promise(resolve => writeStream.end(resolve));
-    await fs.promises.rename(tmpFile, file);
-    return updatedUids;
   }
 
   async delete(table, filter) {
@@ -288,24 +328,31 @@ const Fooldb = class {
     const file = this.$composePath(`data/${table}/data.jsonl`);
     const tmpFile = this.$composePath(`data/${table}/temporary-${uuid}.jsonl`);
     const deletedUids = [];
-    const readStream = fs.createReadStream(file, { encoding: "utf8" });
-    const writeStream = fs.createWriteStream(tmpFile, { encoding: "utf8" });
-    const readline = require("readline").createInterface({
-      input: readStream,
-      crlfDelay: Infinity
-    });
-    for await (const line of readline) {
-      if (!line.trim()) continue;
-      const obj = JSON.parse(line);
-      if (filter(obj)) {
-        if (obj.uid) deletedUids.push(obj.uid);
-        continue;
+    let readStream;
+    let writeStream;
+    let readline;
+    try {
+      readStream = fs.createReadStream(file, { encoding: "utf8" });
+      writeStream = fs.createWriteStream(tmpFile, { encoding: "utf8" });
+      readline = require("readline").createInterface({
+        input: readStream,
+        crlfDelay: Infinity
+      });
+      for await (const line of readline) {
+        if (!line.trim()) continue;
+        const obj = JSON.parse(line);
+        if (filter(obj)) {
+          if (obj.uid) deletedUids.push(obj.uid);
+          continue;
+        }
+        writeStream.write(line + "\n");
       }
-      writeStream.write(line + "\n");
+      await new Promise(resolve => writeStream.end(resolve));
+      await fs.promises.rename(tmpFile, file);
+      return deletedUids;
+    } finally {
+      await this.constructor.$cleanStreams(readStream, writeStream, readline);
     }
-    await new Promise(resolve => writeStream.end(resolve));
-    await fs.promises.rename(tmpFile, file);
-    return deletedUids;
   }
 
 };
