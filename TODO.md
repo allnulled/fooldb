@@ -1,7 +1,25 @@
-- [ ] Permitir nuevos tipos avanzados:
-   - [ ] reference-object
-   - [ ] reference-array
-   - [ ] reference-query
-- [ ] Permitir columnas tipo "createdAt" y "updatedAt"
+- [x] Permitir nuevos tipos avanzados:
+   - [x] reference-object
+   - [x] reference-array
+   - [ ] reference-query con operadores:
+      - [ ] AND/OR
+      - [ ] "="
+      - [ ] "!="
+      - [ ] "<"
+      - [ ] "<="
+      - [ ] ">"
+      - [ ] ">="
+      - [ ] "is null"
+      - [ ] "is not null"
+      - [ ] "is in"
+      - [ ] "is not in"
+      - [ ] "is like"
+      - [ ] "is not like"
+      - [ ] "has"
+      - [ ] "has not"
+- [ ] Permitir columnas tipo:
+   - [ ] "createdAt"
+   - [ ] "updatedAt"
 - [ ] Persistencia de funciones
    - [ ] personalizar un stringify que soporte funciones
+- [ ] Tests para cada feature.

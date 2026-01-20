@@ -5,8 +5,8 @@
  * {{ TOC }}
  * 
  */
-const fs = require("fs");
-const path = require("path");
+
+// No debería haber imports externos.
 
 /**
  * 
@@ -145,6 +145,10 @@ const Fooldb = class {
 
   static assertion = assertion;
 
+  static fs = require("fs");
+
+  static path = require("path");
+
   /**
    * 
    * ## `Fooldb.create(...args)`
@@ -262,8 +266,8 @@ const Fooldb = class {
     try {
       if (writeStream && !writeStream.closed) writeStream.destroy();
       if (readStream && !readStream.closed) readStream.destroy();
-      if (await this.$existsNode(tmpFile)) {
-        await fs.promises.unlink(tmpFile);
+      if (await this.constructor.existsNode(tmpFile)) {
+        await this.fs.promises.unlink(tmpFile);
       }
     } catch (error) {
       // Silenciar: limpieza best-effort
@@ -284,6 +288,18 @@ const Fooldb = class {
     return array1.filter(item => !set2.has(item));
   }
 
+  /**
+   * 
+   * ## `Fooldb.prototype.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`
+   * 
+   * **Uso interno principalmente.**
+   * 
+   * Método que comprueba (devolviendo booleano) si el parámetro es:
+   * 
+   *   - un `Array`
+   *   - con elementos solamente de tipo `Integer`
+   * 
+   */
   static isArrayOfIntegers(arrayOfNumbers) {
     const isArray = Array.isArray(arrayOfNumbers);
     if(!isArray) return false;
@@ -294,6 +310,54 @@ const Fooldb = class {
       }
     }
     return true;
+  }
+
+  /**
+   * 
+   * ## `async Fooldb.existsNode(fileOrDirectory:String):Boolean`
+   * 
+   * **Uso interno solamente.**
+   * 
+   * Método que devuelve un booleano indicando si el nodo existe como fichero o directorio.
+   * 
+   */
+  static async existsNode(fileOrDirectory) {
+    try {
+      await this.fs.promises.access(fileOrDirectory);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * 
+   * ## `async Fooldb.prototype.readJson(file:String):any`
+   * 
+   * **Uso interno solamente.**
+   * 
+   * Método para leer un JSON.
+   * 
+   */
+  static async readJson(file) {
+    const json = await this.fs.promises.readFile(file, "utf8");
+    const data = JSON.parse(json);
+    return data;
+  }
+
+  /**
+   * 
+   * ## `async Fooldb.prototype.writeJson(file:String, data:any)`
+   * 
+   * **Uso interno solamente.**
+   * 
+   * Método para escribir un JSON.
+   * 
+   */
+  static async writeJson(file, data) {
+    const json = JSON.stringify(data);
+    await this.fs.promises.writeFile(file, json, "utf8");
+    return data;
   }
 
   /**
@@ -334,38 +398,6 @@ const Fooldb = class {
 
   /**
    * 
-   * ## `async Fooldb.prototype.readJson(file:String):any`
-   * 
-   * **Uso interno solamente.**
-   * 
-   * Método para leer un JSON.
-   * 
-   */
-  async readJson(file) {
-    this.$trace("Fooldb.prototype.readJson");
-    const json = await fs.promises.readFile(file, "utf8");
-    const data = JSON.parse(json);
-    return data;
-  }
-
-  /**
-   * 
-   * ## `async Fooldb.prototype.writeJson(file:String, data:any)`
-   * 
-   * **Uso interno solamente.**
-   * 
-   * Método para escribir un JSON.
-   * 
-   */
-  async writeJson(file, data) {
-    this.$trace("Fooldb.prototype.writeJson");
-    const json = JSON.stringify(data);
-    await fs.promises.writeFile(file, json, "utf8");
-    return data;
-  }
-
-  /**
-   * 
    * ## `Fooldb.prototype.composePath(...subpaths:Array<String>)`
    * 
    * Método para construir rutas relativas a `this.basedir`.
@@ -373,7 +405,7 @@ const Fooldb = class {
    */
   composePath(...subpaths) {
     this.$trace("Fooldb.prototype.composePath");
-    return path.resolve(this.basedir, ...subpaths);
+    return this.constructor.path.resolve(this.basedir, ...subpaths);
   }
 
   /**
@@ -455,7 +487,7 @@ const Fooldb = class {
     // File & reader:
     const file = this.composePath(`data/${table}/data.jsonl`);
     const readliner = require("readline").createInterface({
-      input: fs.createReadStream(file, { encoding: "utf8" }),
+      input: this.constructor.fs.createReadStream(file, { encoding: "utf8" }),
       crlfDelay: Infinity
     });
     // Column definitions:
@@ -580,30 +612,11 @@ const Fooldb = class {
   async $pickNextId(table) {
     this.$trace("Fooldb.prototype.$pickNextId");
     const filepathForIds = this.composePath(`data/${table}/ids.json`);
-    const contents = await fs.promises.readFile(filepathForIds, "utf8");
+    const contents = await this.constructor.fs.promises.readFile(filepathForIds, "utf8");
     const json = JSON.parse(contents);
-    const uid = json.nextId++;
-    await fs.promises.writeFile(filepathForIds, JSON.stringify(json), "utf8");
+    const uid = json.NEXT_ID++;
+    await this.constructor.fs.promises.writeFile(filepathForIds, JSON.stringify(json), "utf8");
     return uid;
-  }
-
-  /**
-   * 
-   * ## `async Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`
-   * 
-   * **Uso interno solamente.**
-   * 
-   * Método que devuelve un booleano indicando si el nodo existe como fichero o directorio.
-   * 
-   */
-  async $existsNode(fileOrDirectory) {
-    this.$trace("Fooldb.prototype.$existsNode");
-    try {
-      await fs.promises.access(fileOrDirectory)
-      return true;
-    } catch (error) {
-      return false;
-    }
   }
 
   /**
@@ -612,6 +625,7 @@ const Fooldb = class {
    * 
    * Método que inicializa:
    * 
+   * - El directorio de datos: `${this.basedir}/data`
    * - El directorio de tabla: `${this.basedir}/data/${table}`
    * - El fichero de datos: `${this.basedir}/data/${table}/data.jsonl`
    * - El fichero de uids: `${this.basedir}/data/${table}/ids.json`
@@ -619,66 +633,105 @@ const Fooldb = class {
    */
   async ensureTable(table) {
     this.$trace("Fooldb.prototype.ensureTable");
-    const dirpath = this.composePath(`data/${table}`);
-    const filepathForData = `${dirpath}/data.jsonl`;
-    const filepathForIds = `${dirpath}/ids.json`;
-    Inicializar_carpeta: {
-      const exists = await this.$existsNode(dirpath);
+    const datadir = this.composePath(`data`);
+    const tabledir = `${datadir}/${table}`;
+    const tableDataFile = `${tabledir}/data.jsonl`;
+    const tableIdsFile = `${tabledir}/ids.json`;
+    Inicializar_carpeta_de_data: {
+      const exists = await this.constructor.existsNode(datadir);
+      if(!exists) {
+        await this.constructor.fs.promises.mkdir(datadir);
+      }
+    }
+    Inicializar_carpeta_de_tabla: {
+      const exists = await this.constructor.existsNode(tabledir);
       if (!exists) {
-        await fs.promises.mkdir(dirpath);
+        await this.constructor.fs.promises.mkdir(tabledir);
       }
     }
     Inicializar_fichero_de_datos: {
-      const exists = await this.$existsNode(filepathForData);
+      const exists = await this.constructor.existsNode(tableDataFile);
       if (!exists) {
-        await fs.promises.writeFile(filepathForData, "", "utf8");
+        await this.constructor.fs.promises.writeFile(tableDataFile, "", "utf8");
       }
     }
     Inicializar_fichero_de_ids: {
-      const exists = await this.$existsNode(filepathForIds);
+      const exists = await this.constructor.existsNode(tableIdsFile);
       if (!exists) {
-        await fs.promises.writeFile(filepathForIds, JSON.stringify({ nextId: 0 }), "utf8");
+        await this.constructor.fs.promises.writeFile(tableIdsFile, JSON.stringify({ NEXT_ID: 1 }), "utf8");
       }
     }
   }
 
+  /**
+   * 
+   * ## `async Fooldb.prototype.ensureTablesBySchema()`
+   * 
+   * Método que llama a `Fooldb.prototype.ensureTable` para cada tabla que haya definida en el `this.schema`.
+   * 
+   */
   async ensureTablesBySchema() {
     this.$trace("Fooldb.prototype.ensureTablesBySchema");
     const tableIds = Object.keys(this.schema.tables);
-    const ensurePromises = [];
     for(let index=0; index<tableIds.length; index++) {
       const tableId = tableIds[index];
-      const ensurePromise = this.ensureTable(tableId);
-      ensurePromises.push(ensurePromise);
+      await this.ensureTable(tableId);
     }
-    return await Promise.all(ensurePromises);
   }
 
   /**
    * 
-   * ## `async Fooldb.prototype.emptyTable(table:String)`
+   * ## `async Fooldb.prototype.resetTablesBySchema()`
+   * 
+   * Método que elimina toda la base de datos, y vuelve a crear las carpetas de las tablas, desde 0.
+   * 
+   * Elimina tanto nodos como ids.
+   * 
+   * Usar con precaución.
+   * 
+   */
+  async resetTablesBySchema() {
+    this.$trace("Fooldb.prototype.resetTablesBySchema");
+    await this.ensureTablesBySchema();
+    await require("fs").promises.rm(`${this.basedir}/data`, { recursive: true });
+    await this.ensureTablesBySchema();
+  }
+
+  /**
+   * 
+   * ## `async Fooldb.prototype.$emptyTable(table:String)`
+   * 
+   * **Uso interno solamente.**
    * 
    * Método que vacía una tabla, sobreescribiendo en blanco el `${this.basedir}/data/${table}/data.jsonl`.
    * 
+   * Este método no toca los IDS de la tabla: continuarán por el ID que estuvieran.
+   * 
+   * **Cuidado:** rompe con la consistencia porque no comprueba si hay referencias vivas, y puede dejar nodos huérfanos. No es un `delete` normal. Usar con conocimiento.
+   * 
    */
-  async emptyTable(table) {
+  async $emptyTable(table) {
     this.$trace("Fooldb.prototype.ensureTable");
     const filepathForData = this.composePath(`data/${table}/data.jsonl`);
-    await fs.promises.writeFile(filepathForData, "", "utf8");
+    await this.constructor.fs.promises.writeFile(filepathForData, "", "utf8");
   }
 
   /**
    * 
-   * ## `async Fooldb.prototype.emptyTables(tables:Array<String>)`
+   * ## `async Fooldb.prototype.$emptyTables(tables:Array<String>)`
    * 
-   * Método que vacía varias tablas. Usa `Fooldb.prototype.emptyTable` para cada tabla proporcionada en `tables:Array`.
+   * **Uso interno solamente.**
+   * 
+   * Método que vacía varias tablas. Usa `Fooldb.prototype.$emptyTable` para cada tabla proporcionada en `tables:Array`.
+   * 
+   * **Cuidado:** rompe con la consistencia porque no comprueba si hay referencias vivas, y puede dejar nodos huérfanos. No es un `delete` normal. Usar con conocimiento.
    * 
    */
-  async emptyTables(tables) {
-    this.$trace("Fooldb.prototype.emptyTables");
+  async $emptyTables(tables) {
+    this.$trace("Fooldb.prototype.$emptyTables");
     for(let index=0; index<tables.length; index++) {
       const table = tables[index];
-      await this.emptyTable(table);
+      await this.$emptyTable(table);
     }
   }
 
@@ -698,7 +751,7 @@ const Fooldb = class {
     const file = this.composePath(`data/${table}/data.jsonl`);
     const dataset = [];
     const readliner = require("readline").createInterface({
-      input: fs.createReadStream(file, { encoding: "utf8" }),
+      input: this.constructor.fs.createReadStream(file, { encoding: "utf8" }),
       crlfDelay: Infinity
     });
     for await (const line of readliner) {
@@ -735,7 +788,7 @@ const Fooldb = class {
     const uuid = this.constructor.generateUuid();
     const record = Object.assign({ uid, uuid }, value);
     const line = JSON.stringify(record) + "\n";
-    await fs.promises.appendFile(file, line, "utf8");
+    await this.constructor.fs.promises.appendFile(file, line, "utf8");
     return uid;
   }
 
@@ -756,7 +809,7 @@ const Fooldb = class {
     const uid = await this.$pickNextId(table);
     const record = Object.assign({}, value, { uid });
     const line = JSON.stringify(record) + "\n";
-    await fs.promises.appendFile(file, line, "utf8");
+    await this.constructor.fs.promises.appendFile(file, line, "utf8");
     return uid;
   }
 
@@ -784,8 +837,8 @@ const Fooldb = class {
     let readStream;
     let readliner;
     try {
-      readStream = fs.createReadStream(file, { encoding: "utf8" });
-      writeStream = fs.createWriteStream(tmpFile, { encoding: "utf8" });
+      readStream = this.constructor.fs.createReadStream(file, { encoding: "utf8" });
+      writeStream = this.constructor.fs.createWriteStream(tmpFile, { encoding: "utf8" });
       readliner = require("readline").createInterface({
         input: readStream,
         crlfDelay: Infinity
@@ -804,7 +857,7 @@ const Fooldb = class {
         }
       }
       await new Promise(resolve => writeStream.end(resolve));
-      await fs.promises.rename(tmpFile, file);
+      await this.constructor.fs.promises.rename(tmpFile, file);
       return updatedIds;
     } finally {
       await this.constructor.$cleanStreams(readStream, writeStream, tmpFile);
@@ -832,8 +885,8 @@ const Fooldb = class {
     let writeStream;
     let readliner;
     try {
-      readStream = fs.createReadStream(file, { encoding: "utf8" });
-      writeStream = fs.createWriteStream(tmpFile, { encoding: "utf8" });
+      readStream = this.constructor.fs.createReadStream(file, { encoding: "utf8" });
+      writeStream = this.constructor.fs.createWriteStream(tmpFile, { encoding: "utf8" });
       readliner = require("readline").createInterface({
         input: readStream,
         crlfDelay: Infinity
@@ -848,7 +901,7 @@ const Fooldb = class {
         writeStream.write(line + "\n");
       }
       await new Promise(resolve => writeStream.end(resolve));
-      await fs.promises.rename(tmpFile, file);
+      await this.constructor.fs.promises.rename(tmpFile, file);
       return deletedIds;
     } finally {
       await this.constructor.$cleanStreams(readStream, writeStream, tmpFile);

@@ -19,24 +19,27 @@
   17. [`Fooldb.isValidMoment(text:String):Boolean`](#fooldbisvalidmomenttextstringboolean)
   18. [`async Fooldb.$cleanStreams(readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`](#async-fooldbcleanstreamsreadstreamreaderstream-writestreamwriterstream-tmpfilestring)
   19. [`Fooldb.prototype.findMissingElements(array1:Array, array2:Array):Array`](#fooldbprototypefindmissingelementsarray1array-array2arrayarray)
-  20. [`Fooldb.prototype.$trace(message:String)`](#fooldbprototypetracemessagestring)
-  21. [`Fooldb.constructor(basedir:String, options:Object = {})`](#fooldbconstructorbasedirstring-optionsobject-)
+  20. [`Fooldb.prototype.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`](#fooldbprototypeisarrayofintegersarrayofnumbersarrayintegerboolean)
+  21. [`async Fooldb.existsNode(fileOrDirectory:String):Boolean`](#async-fooldbexistsnodefileordirectorystringboolean)
   22. [`async Fooldb.prototype.readJson(file:String):any`](#async-fooldbprototypereadjsonfilestringany)
   23. [`async Fooldb.prototype.writeJson(file:String, data:any)`](#async-fooldbprototypewritejsonfilestring-dataany)
-  24. [`Fooldb.prototype.composePath(...subpaths:Array<String>)`](#fooldbprototypecomposepathsubpathsarraystring)
-  25. [`Fooldb.prototype.loadSchemaFromBasedir()`](#fooldbprototypeloadschemafrombasedir)
-  26. [`Fooldb.prototype.$findMissingUids(table:String, uids:Array<Integer>):Array<Integer>`](#fooldbprototypefindmissinguidstablestring-uidsarrayintegerarrayinteger)
-  27. [`async Fooldb.prototype.$checkTableValueBySchema(table:String, row:Object, operation:String):MultipleConstraintErrors`](#async-fooldbprototypechecktablevaluebyschematablestring-rowobject-operationstringmultipleconstrainterrors)
-  28. [`async Fooldb.prototype.$pickNextId(table:String):String`](#async-fooldbprototypepicknextidtablestringstring)
-  29. [`async Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`](#async-fooldbprototypeexistsnodefileordirectorystringboolean)
-  30. [`async Fooldb.prototype.ensureTable(table:String)`](#async-fooldbprototypeensuretabletablestring)
-  31. [`async Fooldb.prototype.emptyTable(table:String)`](#async-fooldbprototypeemptytabletablestring)
-  32. [`async Fooldb.prototype.emptyTables(tables:Array<String>)`](#async-fooldbprototypeemptytablestablesarraystring)
-  33. [`async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`](#async-fooldbprototypeselecttablestring-filterfunctionarrayobject)
-  34. [`async Fooldb.prototype.initialize(table:String, value:Object)`](#async-fooldbprototypeinitializetablestring-valueobject)
-  35. [`async Fooldb.prototype.insert(table:String, value:Object):String`](#async-fooldbprototypeinserttablestring-valueobjectstring)
-  36. [`async Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`](#async-fooldbprototypeupdatetablestring-filterfunction-valueobjectarrayinteger)
-  37. [`async Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`](#async-fooldbprototypedeletetablestring-filterfunctionarrayinteger)
+  24. [`Fooldb.prototype.$trace(message:String)`](#fooldbprototypetracemessagestring)
+  25. [`Fooldb.constructor(basedir:String, options:Object = {})`](#fooldbconstructorbasedirstring-optionsobject-)
+  26. [`Fooldb.prototype.composePath(...subpaths:Array<String>)`](#fooldbprototypecomposepathsubpathsarraystring)
+  27. [`Fooldb.prototype.loadSchemaFromBasedir()`](#fooldbprototypeloadschemafrombasedir)
+  28. [`Fooldb.prototype.$findMissingUids(table:String, uids:Array<Integer>):Array<Integer>`](#fooldbprototypefindmissinguidstablestring-uidsarrayintegerarrayinteger)
+  29. [`async Fooldb.prototype.$checkTableValueBySchema(table:String, row:Object, operation:String):MultipleConstraintErrors`](#async-fooldbprototypechecktablevaluebyschematablestring-rowobject-operationstringmultipleconstrainterrors)
+  30. [`async Fooldb.prototype.$pickNextId(table:String):String`](#async-fooldbprototypepicknextidtablestringstring)
+  31. [`async Fooldb.prototype.ensureTable(table:String)`](#async-fooldbprototypeensuretabletablestring)
+  32. [`async Fooldb.prototype.ensureTablesBySchema()`](#async-fooldbprototypeensuretablesbyschema)
+  33. [`async Fooldb.prototype.resetTablesBySchema()`](#async-fooldbprototyperesettablesbyschema)
+  34. [`async Fooldb.prototype.$emptyTable(table:String)`](#async-fooldbprototypeemptytabletablestring)
+  35. [`async Fooldb.prototype.$emptyTables(tables:Array<String>)`](#async-fooldbprototypeemptytablestablesarraystring)
+  36. [`async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`](#async-fooldbprototypeselecttablestring-filterfunctionarrayobject)
+  37. [`async Fooldb.prototype.initialize(table:String, value:Object)`](#async-fooldbprototypeinitializetablestring-valueobject)
+  38. [`async Fooldb.prototype.insert(table:String, value:Object):String`](#async-fooldbprototypeinserttablestring-valueobjectstring)
+  39. [`async Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`](#async-fooldbprototypeupdatetablestring-filterfunction-valueobjectarrayinteger)
+  40. [`async Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`](#async-fooldbprototypedeletetablestring-filterfunctionarrayinteger)
 
 ## `Fooldb.AssertionError:Error`
 
@@ -145,6 +148,33 @@ Método que destruye los streams que haya abiertos y elimina el fichero temporal
 
 Método que encuentra los elementos del `array1` que **no aparecen** en el `array2`.
 
+## `Fooldb.prototype.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`
+
+**Uso interno principalmente.**
+
+Método que comprueba (devolviendo booleano) si el parámetro es:
+
+  - un `Array`
+  - con elementos solamente de tipo `Integer`
+
+## `async Fooldb.existsNode(fileOrDirectory:String):Boolean`
+
+**Uso interno solamente.**
+
+Método que devuelve un booleano indicando si el nodo existe como fichero o directorio.
+
+## `async Fooldb.prototype.readJson(file:String):any`
+
+**Uso interno solamente.**
+
+Método para leer un JSON.
+
+## `async Fooldb.prototype.writeJson(file:String, data:any)`
+
+**Uso interno solamente.**
+
+Método para escribir un JSON.
+
 ## `Fooldb.prototype.$trace(message:String)`
 
 **Uso interno solamente.**
@@ -160,18 +190,6 @@ Establece `this.basedir` basándose en el parámetro.
 Establece `this.options` basándose en `this.constructor.defaultOptions` y el parámetro.
 
 Finalmente, inicializa el `this.schema` llamando a `this.loadSchemaFromBasedir()`.
-
-## `async Fooldb.prototype.readJson(file:String):any`
-
-**Uso interno solamente.**
-
-Método para leer un JSON.
-
-## `async Fooldb.prototype.writeJson(file:String, data:any)`
-
-**Uso interno solamente.**
-
-Método para escribir un JSON.
 
 ## `Fooldb.prototype.composePath(...subpaths:Array<String>)`
 
@@ -229,27 +247,44 @@ Método que:
  - Lo incrementa y lo persiste
  - Devuelve el `uid` sacado.
 
-## `async Fooldb.prototype.$existsNode(fileOrDirectory:String):Boolean`
-
-**Uso interno solamente.**
-
-Método que devuelve un booleano indicando si el nodo existe como fichero o directorio.
-
 ## `async Fooldb.prototype.ensureTable(table:String)`
 
 Método que inicializa:
 
+- El directorio de datos: `${this.basedir}/data`
 - El directorio de tabla: `${this.basedir}/data/${table}`
 - El fichero de datos: `${this.basedir}/data/${table}/data.jsonl`
 - El fichero de uids: `${this.basedir}/data/${table}/ids.json`
 
-## `async Fooldb.prototype.emptyTable(table:String)`
+## `async Fooldb.prototype.ensureTablesBySchema()`
+
+Método que llama a `Fooldb.prototype.ensureTable` para cada tabla que haya definida en el `this.schema`.
+
+## `async Fooldb.prototype.resetTablesBySchema()`
+
+Método que elimina toda la base de datos, y vuelve a crear las carpetas de las tablas, desde 0.
+
+Elimina tanto nodos como ids.
+
+Usar con precaución.
+
+## `async Fooldb.prototype.$emptyTable(table:String)`
+
+**Uso interno solamente.**
 
 Método que vacía una tabla, sobreescribiendo en blanco el `${this.basedir}/data/${table}/data.jsonl`.
 
-## `async Fooldb.prototype.emptyTables(tables:Array<String>)`
+Este método no toca los IDS de la tabla: continuarán por el ID que estuvieran.
 
-Método que vacía varias tablas. Usa `Fooldb.prototype.emptyTable` para cada tabla proporcionada en `tables:Array`.
+**Cuidado:** rompe con la consistencia porque no comprueba si hay referencias vivas, y puede dejar nodos huérfanos. No es un `delete` normal. Usar con conocimiento.
+
+## `async Fooldb.prototype.$emptyTables(tables:Array<String>)`
+
+**Uso interno solamente.**
+
+Método que vacía varias tablas. Usa `Fooldb.prototype.$emptyTable` para cada tabla proporcionada en `tables:Array`.
+
+**Cuidado:** rompe con la consistencia porque no comprueba si hay referencias vivas, y puede dejar nodos huérfanos. No es un `delete` normal. Usar con conocimiento.
 
 ## `async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`
 

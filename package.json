@@ -5,7 +5,7 @@
   "scripts": {
     "up": "bash gitup.sh",
     "build:docs": "node build/build-docs.js",
-    "dev": "npx nodemon -w 'fooldb.js' -w 'lib' -w 'test/test.js' -e 'js' -x 'npm test'",
+    "dev": "npx nodemon -w 'fooldb.js' -w 'lib' -w 'test/test.js' -w 'lib' -w 'test/features' -e 'js' -x 'npx nyc npm test'",
     "test": "node test/test.js"
   },
   "keywords": [],
@@ -14,5 +14,19 @@
   "description": "",
   "devDependencies": {
     "@allnulled/javadoc-brute": "^1.0.4"
+  },
+  "nyc": {
+    "all": false,
+    "include": [
+      "fooldb.js"
+    ],
+    "exclude": [],
+    "reporter": [
+      "html"
+    ],
+    "report-dir": "test/coverage",
+    "extension": [
+      ".js"
+    ]
   }
 }

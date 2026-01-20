@@ -1,0 +1,1 @@
+{"processes":{"1504f038-1b55-47a4-bbcc-7730602fb51a":{"parent":null,"children":["44c3b97d-4b72-4de9-9198-8c2fef4ebf73"]},"44c3b97d-4b72-4de9-9198-8c2fef4ebf73":{"parent":"1504f038-1b55-47a4-bbcc-7730602fb51a","children":[]}},"files":{"/home/carlos/Escritorio/fool-db/fooldb.js":["44c3b97d-4b72-4de9-9198-8c2fef4ebf73"]},"externalIds":{}}
