@@ -170,14 +170,12 @@ const Fooldb = class {
    * 
    * ```js
    * {
-   *   forceSchema: true,
    *   trace: true
    * }
    * ```
    * 
    */
   static defaultOptions = {
-    forceSchema: true,
     trace: true
   };
 
@@ -228,6 +226,9 @@ const Fooldb = class {
    * 
    */
   static isValidDay(text) {
+    if(typeof text !== "string") {
+      return false;
+    }
     return text.match(/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$/g).length !== 0;
   }
 
@@ -239,6 +240,9 @@ const Fooldb = class {
    * 
    */
   static isValidHour(text) {
+    if(typeof text !== "string") {
+      return false;
+    }
     return text.match(/^[0-9]{2}\:[0-9]{2}\:[0-9]{2}$/g).length !== 0;
   }
 
@@ -250,6 +254,9 @@ const Fooldb = class {
    * 
    */
   static isValidMoment(text) {
+    if(typeof text !== "string") {
+      return false;
+    }
     return text.match(/^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}\:[0-9]{2}\:[0-9]{2}$/g).length !== 0;
   }
 
@@ -276,7 +283,7 @@ const Fooldb = class {
 
   /**
    * 
-   * ## `Fooldb.prototype.findMissingElements(array1:Array, array2:Array):Array`
+   * ## `Fooldb.findMissingElements(array1:Array, array2:Array):Array`
    * 
    * **Uso interno principalmente.**
    * 
@@ -290,7 +297,22 @@ const Fooldb = class {
 
   /**
    * 
-   * ## `Fooldb.prototype.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`
+   * ## `Fooldb.removeElementFromArray(item:any, array:Array)`
+   * 
+   * **Uso interno principalmente.**
+   * 
+   * Método que elimina un elemento de un array.
+   * 
+   */
+  static removeElementFromArray(item, array) {
+    const pos = array.indexOf(item);
+    if(pos === -1) return false;
+    array.splice(pos, 1);
+  }
+
+  /**
+   * 
+   * ## `Fooldb.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`
    * 
    * **Uso interno principalmente.**
    * 
@@ -396,6 +418,29 @@ const Fooldb = class {
     this.loadSchemaFromBasedir();
   }
 
+  trace = {
+    /**
+     * 
+     * ## `Fooldb.prototype.trace.activate()`
+     * 
+     * Activa la opción de trace.
+     * 
+     */
+    activate: () => {
+      this.options.trace = true;
+    },
+    /**
+     * 
+     * ## `Fooldb.prototype.trace.deactivate()`
+     * 
+     * Desactiva la opción de trace.
+     * 
+     */
+    deactivate: () => {
+      this.options.trace = false;
+    }
+  }
+
   /**
    * 
    * ## `Fooldb.prototype.composePath(...subpaths:Array<String>)`
@@ -462,27 +507,26 @@ const Fooldb = class {
    * 
    * Las comprobaciones que se llevan a cabo son, iterando las columnas del esquema:
    * 
-   * - Comprobación 1: si es `required:true`
+   * - Comprobación 1: si es `nullable:false`
    *    - Si es operación `updating` se evita: porque se supone que el `row` puede tener el valor que se omite
    *    - Si es operación `inserting` o `initializing`: se comprueba que la columna no sea `undefined` en el `row`.
    * - Comprobación 2: si es `type:any`
    *    - Si no especifica el tipo, se salta el paso
-   *    - Si no es `required:true` y no especifica la columna en la `row`, se salta el paso
+   *    - Si no es `nullable:false` y no especifica la columna en la `row`, se salta el paso
    *    - Si es operación `updating` y no especifica la columna en la `row`, se salta el paso
    *    - Comprueba que el tipo sea válido, sea tipo básico o avanzado.
    * - Comprobación 3: si es `unique:true`
    *    - Si no requiere de ser `unique`, se salta el paso.
    *    - Comprueba que el `data/${table}/indexes/${column}.json` no tenga el valor especificado en la columna
    *       - O de tenerlo, es el mismo `uid`
+   * - Comprobación 4: si la tabla tiene `openColumns:true` o no:
+   *    - Si tiene `openColumns:true`, se salta el paso.
+   *    - Comprueba que todas las propiedades de `row` estén en el `this.schema[table].columns` como claves.
    * 
    */
   async $checkTableValueBySchema(table, row, operation) {
     this.$trace("Fooldb.prototype.$checkTableValueBySchema");
-    if (!this.options.forceSchema) {
-      this.$trace("Schema constrictions are not activated");
-      return false;
-    }
-    assertion(typeof this.schema === "object", `Database requires a schema because option «forceSchema» is activated while «${operation}» on «$checkTableValueBySchema»`);
+    assertion(typeof this.schema === "object", `Required configuration «schema» to be an object on «$checkTableValueBySchema»`);
     assertion(table in this.schema.tables, `Required parameter «table» to exist in «this.schema» on «Fooldb.prototype.$checkTableValueBySchema»`);
     // File & reader:
     const file = this.composePath(`data/${table}/data.jsonl`);
@@ -490,7 +534,7 @@ const Fooldb = class {
       input: this.constructor.fs.createReadStream(file, { encoding: "utf8" }),
       crlfDelay: Infinity
     });
-    // Column definitions:
+    // Retrieve column definitions:
     const columnDefinitions = this.schema.tables[table].columns;
     const columnIds = Object.keys(columnDefinitions);
     // Prepare MultipleConstraintErrors instance:
@@ -499,78 +543,96 @@ const Fooldb = class {
     const isUpdating = operation === "updating";
     const isInserting = operation === "inserting";
     const isInitializing = operation === "initializing";
+    // Comprobación de schema.tables[table].openColumns:
+    Checking_open_columns: {
+      const hasOpenColumns = this.schema.tables[table].openColumns || false;
+      if(hasOpenColumns) {
+        break Checking_open_columns;
+      }
+      const rowColumnIds = Object.keys(row);
+      const extraColumns = this.constructor.findMissingElements(rowColumnIds, columnIds);
+      this.constructor.removeElementFromArray("uid", extraColumns);
+      constraintErrors.assertion(extraColumns.length === 0, `Schema constraint «table.openColumns» is not admitting «${table}» to have columns «${extraColumns.join("»,«")}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+    }
     for (let index = 0; index < columnIds.length; index++) {
+      // Cogemos nombre y definición de la columna:
       const columnId = columnIds[index];
       const columnDefinition = columnDefinitions[columnId];
+      // Parcheamos undefineds en inserting o initializing cuando es nullable con null:
+      if(typeof row[columnId] === "undefined" && (isInserting || isInitializing)) {
+        row[columnId] = null;
+      }
+      // Cogemos variables interesantes sobre el valor y la definición de la columna:
       const isUndefined = typeof row[columnId] === "undefined";
-      // Por defecto, todos los campos son required, esto significa que solo tiene sentido especificar `required:false` en el `schema.js`
-      const isRequired = typeof columnDefinition.required === "undefined" ? true : columnDefinition.required;
+      const isNull = (!isUndefined) && (row[columnId] === null);
+      // Por defecto, todos los campos son nullable, esto significa que solo tiene sentido especificar `nullable:false` en el `schema.js`
+      const isNullable = typeof columnDefinition.nullable === "undefined" ? false : columnDefinition.nullable;
       const mustBeUnique = columnDefinition.unique === true;
       const mustBeType = columnDefinition.type || undefined;
-      Checking_required: {
-        // Si no es requerido, salta el paso:
-        if (!isRequired) {
-          break Checking_required;
+      Checking_nullable: {
+        // Si es nulable, salta el paso:
+        if (isNullable) {
+          break Checking_nullable;
         }
         // Si es un update, se supone que puede estar ya en el row, así que no se comprueba:
         if (isUpdating) {
-          break Checking_required;
+          break Checking_nullable;
         }
         // Comprobación del require:
         const hasColumn = typeof row[columnId] !== "undefined";
-        constraintErrors.assertion(hasColumn, `Schema constraint «required» requires column «${table}.${columnId}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+        constraintErrors.assertion(hasColumn, `Schema constraint «column.nullable» requires column «${table}.${columnId}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
       }
       Checking_type: {
         // Si no fuerza el tipo, salta el paso:
         if (typeof mustBeType === "undefined") {
           break Checking_type;
         }
-        // Si no es requerido y tampoco es definido, salta el paso:
-        if (isUndefined && !isRequired) {
-          break Checking_type;
-        }
         // Si es un update y tampoco es definido, salta el paso:
         if (isUpdating && isUndefined) {
+          break Checking_type;
+        }
+        // Si es nulable y es nulo, salta el paso:
+        if (isNull && isNullable) {
           break Checking_type;
         }
         // Comprobación del tipo:
         if(this.constructor.basicTypes.indexOf(mustBeType) !== -1) {
           // Si el tipo es un básico:
-          constraintErrors.assertion(typeof row[columnId] === mustBeType, `Schema constraint «type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+          constraintErrors.assertion(typeof row[columnId] === mustBeType, `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
         } else {
           // Si el tipo no es un básico:
           if(mustBeType === "integer") {
-            constraintErrors.assertion(Number.isInteger(row[columnId]), `Schema constraint «type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
+            constraintErrors.assertion(Number.isInteger(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
           } else if(mustBeType === "array") {
-            constraintErrors.assertion(Array.isArray(row[columnId]), `Schema constraint «type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
+            constraintErrors.assertion(Array.isArray(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
           } else if(mustBeType === "day") {
-            constraintErrors.assertion(this.constructor.isValidDay(row[columnId]), `Schema constraint «type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
+            constraintErrors.assertion(this.constructor.isValidDay(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
           } else if(mustBeType === "hour") {
-            constraintErrors.assertion(this.constructor.isValidHour(row[columnId]), `Schema constraint «type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
+            constraintErrors.assertion(this.constructor.isValidHour(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
           } else if(mustBeType === "moment") {
-            constraintErrors.assertion(this.constructor.isValidMoment(row[columnId]), `Schema constraint «type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
+            constraintErrors.assertion(this.constructor.isValidMoment(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
           } else if(mustBeType === "referred-object") {
             const referredTable = columnDefinition.referredTable;
-            const isNumber = constraintErrors.assertion(typeof row[columnId] === "number", `Schema constraint «type» in case «${mustBeType}» requires column «${table}.${columnId}» to be number on «Fooldb.prototype.$checkTableValueBySchema»`);
+            const isNumber = constraintErrors.assertion(typeof row[columnId] === "number", `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be number on «Fooldb.prototype.$checkTableValueBySchema»`);
             if(!isNumber) {
               break Checking_type;
             }
             const missingUids = await this.$findMissingUids(referredTable, [row[columnId]]);
-            constraintErrors.assertion(missingUids.length === 0, `Schema constraint «type» in case «${mustBeType}» requires column «${table}.${columnId}» to exist as «uid» in «${referredTable}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+            constraintErrors.assertion(missingUids.length === 0, `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to exist as «uid» in «${referredTable}» on «Fooldb.prototype.$checkTableValueBySchema»`);
           } else if(mustBeType === "referred-array") {
             const referredTable = columnDefinition.referredTable;
-            const isArray = constraintErrors.assertion(Array.isArray(row[columnId]), `Schema constraint «type» in case «${mustBeType}» requires column «${table}.${columnId}» to be array on «Fooldb.prototype.$checkTableValueBySchema»`);
+            const isArray = constraintErrors.assertion(Array.isArray(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be array on «Fooldb.prototype.$checkTableValueBySchema»`);
             if(!isArray) {
               break Checking_type;
             }
-            const isArrayOfIntegers = constraintErrors.assertion(this.constructor.isArrayOfIntegers(row[columnId]), `Schema constraint «type» in case «${mustBeType}» requires column «${table}.${columnId}» to be array of numbers on «Fooldb.prototype.$checkTableValueBySchema»`);
+            const isArrayOfIntegers = constraintErrors.assertion(this.constructor.isArrayOfIntegers(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be array of numbers on «Fooldb.prototype.$checkTableValueBySchema»`);
             if(!isArrayOfIntegers) {
               break Checking_type;
             }
             const missingUids = await this.$findMissingUids(referredTable, row[columnId]);
-            constraintErrors.assertion(missingUids.length === 0, `Schema constraint «type» in case «${mustBeType}» requires column «${table}.${columnId}» to exist as «uid» in «${referredTable}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+            constraintErrors.assertion(missingUids.length === 0, `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to exist as «uid» in «${referredTable}» on «Fooldb.prototype.$checkTableValueBySchema»`);
           } else {
-            throw new Error(`Type «${mustBeType}» is not recognized as type on column «${table}.${columnId}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+            throw new Error(`Type «${mustBeType}» on «schema» is not recognized as type on column «${table}.${columnId}» on «Fooldb.prototype.$checkTableValueBySchema»`);
           }
         }
       }
@@ -579,16 +641,21 @@ const Fooldb = class {
         if (!mustBeUnique) {
           break Checking_unique;
         }
+        // Si es nulable y es nulo, salta el paso:
+        if (isNull && isNullable) {
+          break Checking_unique;
+        }
         // Y aquí se hace un cuello de botella según ChatGPT, pero es lo que hay de momento:
         Iterating_rows:
         for await (const line of readliner) {
+          // Esta línea la metió ChatGPT para sugerir que en un futuro, donde pudiera haber indexación, las líneas en blanco permanecerían en las rows eliminadas, y el número de línea serviría como índice.
           if (!line.trim()) continue;
           const value = JSON.parse(line);
           // Si es el mismo row, salta el row:
           if (value.uid === row.uid) {
             continue Iterating_rows;
           }
-          constraintErrors.assertion(value[columnId] !== row[columnId], `Schema constraint «unique» is avoiding to duplicate «${table}#${value.uid}.${columnId}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+          constraintErrors.assertion(value[columnId] !== row[columnId], `Schema constraint «column.unique» is avoiding to duplicate «${table}#${value.uid}.${columnId}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
         }
       }
     }
@@ -699,44 +766,6 @@ const Fooldb = class {
 
   /**
    * 
-   * ## `async Fooldb.prototype.$emptyTable(table:String)`
-   * 
-   * **Uso interno solamente.**
-   * 
-   * Método que vacía una tabla, sobreescribiendo en blanco el `${this.basedir}/data/${table}/data.jsonl`.
-   * 
-   * Este método no toca los IDS de la tabla: continuarán por el ID que estuvieran.
-   * 
-   * **Cuidado:** rompe con la consistencia porque no comprueba si hay referencias vivas, y puede dejar nodos huérfanos. No es un `delete` normal. Usar con conocimiento.
-   * 
-   */
-  async $emptyTable(table) {
-    this.$trace("Fooldb.prototype.ensureTable");
-    const filepathForData = this.composePath(`data/${table}/data.jsonl`);
-    await this.constructor.fs.promises.writeFile(filepathForData, "", "utf8");
-  }
-
-  /**
-   * 
-   * ## `async Fooldb.prototype.$emptyTables(tables:Array<String>)`
-   * 
-   * **Uso interno solamente.**
-   * 
-   * Método que vacía varias tablas. Usa `Fooldb.prototype.$emptyTable` para cada tabla proporcionada en `tables:Array`.
-   * 
-   * **Cuidado:** rompe con la consistencia porque no comprueba si hay referencias vivas, y puede dejar nodos huérfanos. No es un `delete` normal. Usar con conocimiento.
-   * 
-   */
-  async $emptyTables(tables) {
-    this.$trace("Fooldb.prototype.$emptyTables");
-    for(let index=0; index<tables.length; index++) {
-      const table = tables[index];
-      await this.$emptyTable(table);
-    }
-  }
-
-  /**
-   * 
    * ## `async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`
    * 
    * Método select de una tabla.
@@ -755,9 +784,16 @@ const Fooldb = class {
       crlfDelay: Infinity
     });
     for await (const line of readliner) {
+      // Esta línea la metió ChatGPT para sugerir que en un futuro, donde pudiera haber indexación, las líneas en blanco permanecerían en las rows eliminadas, y el número de línea serviría como índice.
       if (!line.trim()) continue;
       const row = JSON.parse(line);
-      if (filter(row)) {
+      let result = false;
+      try {
+        result = filter(row);
+      } catch (error) {
+        result = false;
+      }
+      if (result) {
         dataset.push(row);
       }
     }
@@ -766,19 +802,19 @@ const Fooldb = class {
 
   /**
    * 
-   * ## `async Fooldb.prototype.initialize(table:String, value:Object)`
+   * ## `async Fooldb.prototype.initialize(table:String, row:Object)`
    * 
    * Este método es un insert con silencios.
    * 
    * Lo único que si solo lanza errores de duplicación, no propaga el error, simplemente devuelve `false` y no inserta nada.
    * 
    */
-  async initialize(table, value) {
+  async initialize(table, row) {
     this.$trace("Fooldb.prototype.initialize");
     assertion(typeof table === "string", "Parameter «table» must be «string» on «Fooldb.prototype.initialize»");
-    assertion((typeof value === "object") && (value !== null), "Parameter «value» must be «object» on «Fooldb.prototype.initialize»");
-    const constraintErrors = await this.$checkTableValueBySchema(table, value, "initializing");
-    constraintErrors.throwIfAnyExcept("Schema constraint «unique»");
+    assertion((typeof row === "object") && (row !== null), "Parameter «row» must be «object» on «Fooldb.prototype.initialize»");
+    const constraintErrors = await this.$checkTableValueBySchema(table, row, "initializing");
+    constraintErrors.throwIfAnyExcept("Schema constraint «column.unique»");
     if(constraintErrors.length) {
       // Si tiene errores, no se inserta:
       return false;
@@ -786,7 +822,7 @@ const Fooldb = class {
     const file = this.composePath(`data/${table}/data.jsonl`);
     const uid = await this.$pickNextId(table);
     const uuid = this.constructor.generateUuid();
-    const record = Object.assign({ uid, uuid }, value);
+    const record = Object.assign({ uid, uuid }, row);
     const line = JSON.stringify(record) + "\n";
     await this.constructor.fs.promises.appendFile(file, line, "utf8");
     return uid;
@@ -794,20 +830,20 @@ const Fooldb = class {
 
   /**
    * 
-   * ## `async Fooldb.prototype.insert(table:String, value:Object):String`
+   * ## `async Fooldb.prototype.insert(table:String, row:Object):String`
    * 
    * Método para insertar una row en una tabla. Hará las comprobaciones pertinentes de constricción de esquema antes.
    * 
    */
-  async insert(table, value) {
+  async insert(table, row) {
     this.$trace("Fooldb.prototype.insert");
     assertion(typeof table === "string", "Parameter «table» must be «string» on «Fooldb.prototype.insert»");
-    assertion((typeof value === "object") && (value !== null), "Parameter «value» must be «object» on «Fooldb.prototype.insert»");
-    const constraintErrors = await this.$checkTableValueBySchema(table, value, "inserting");
+    assertion((typeof row === "object") && (row !== null), "Parameter «row» must be «object» on «Fooldb.prototype.insert»");
+    const constraintErrors = await this.$checkTableValueBySchema(table, row, "inserting");
     constraintErrors.throwIfAny();
     const file = this.composePath(`data/${table}/data.jsonl`);
     const uid = await this.$pickNextId(table);
-    const record = Object.assign({}, value, { uid });
+    const record = Object.assign({}, row, { uid });
     const line = JSON.stringify(record) + "\n";
     await this.constructor.fs.promises.appendFile(file, line, "utf8");
     return uid;
@@ -822,12 +858,12 @@ const Fooldb = class {
    * Devuelve los `uid:Integer` alterados por la operación.
    * 
    */
-  async update(table, filter, value) {
+  async update(table, filter, values) {
     this.$trace("Fooldb.prototype.update");
     assertion(typeof table === "string", "Parameter «table» must be «string» on «Fooldb.prototype.update»");
     assertion(typeof filter === "function", "Parameter «filter» must be «function» on «Fooldb.prototype.update»");
-    assertion((typeof value === "object") && (value !== null), "Parameter «value» must be «object» on «Fooldb.prototype.update»");
-    const constraintErrors = await this.$checkTableValueBySchema(table, value, "updating");
+    assertion((typeof values === "object") && (values !== null), "Parameter «values» must be «object» on «Fooldb.prototype.update»");
+    const constraintErrors = await this.$checkTableValueBySchema(table, values, "updating");
     constraintErrors.throwIfAny();
     const uuid = this.constructor.generateUuid();
     const file = this.composePath(`data/${table}/data.jsonl`);
@@ -847,9 +883,9 @@ const Fooldb = class {
       Iterating_rows:
       for await (const line of readliner) {
         if (!line.trim()) continue Iterating_rows;
-        const obj = JSON.parse(line);
-        if (filter(obj)) {
-          updatedRecord = Object.assign({}, obj, value);
+        const row = JSON.parse(line);
+        if (filter(row)) {
+          updatedRecord = Object.assign({}, row, values);
           updatedIds.push(updatedRecord.uid);
           writeStream.write(JSON.stringify(updatedRecord) + "\n");
         } else {
@@ -892,6 +928,7 @@ const Fooldb = class {
         crlfDelay: Infinity
       });
       for await (const line of readliner) {
+        // Esta línea la metió ChatGPT para sugerir que en un futuro, donde pudiera haber indexación, las líneas en blanco permanecerían en las rows eliminadas, y el número de línea serviría como índice.
         if (!line.trim()) continue;
         const obj = JSON.parse(line);
         if (filter(obj)) {

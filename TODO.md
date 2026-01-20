@@ -1,25 +1,32 @@
 - [x] Permitir nuevos tipos avanzados:
    - [x] reference-object
    - [x] reference-array
-   - [ ] reference-query con operadores:
-      - [ ] AND/OR
-      - [ ] "="
-      - [ ] "!="
-      - [ ] "<"
-      - [ ] "<="
-      - [ ] ">"
-      - [ ] ">="
-      - [ ] "is null"
-      - [ ] "is not null"
-      - [ ] "is in"
-      - [ ] "is not in"
-      - [ ] "is like"
-      - [ ] "is not like"
-      - [ ] "has"
-      - [ ] "has not"
+- [x] Comprueba que todos los campos del row son columnas definidas en el schema
+   - [x] A no ser que la tabla tenga `openColumns:true`.
+- [x] Tests para cada tipo de dato
+- [x] Rellenar los campos vacíos que tengan `nullable:true` con `null`
+- [x] Tests para cada feature.
+
+Más adelante:
+
+- [ ] Soporte para tipo function
+   - [ ] Sin hydrate todavía
+- [ ] reference-query con operadores:
+   - [ ] AND/OR
+   - [ ] "="
+   - [ ] "!="
+   - [ ] "<"
+   - [ ] "<="
+   - [ ] ">"
+   - [ ] ">="
+   - [ ] "is null"
+   - [ ] "is not null"
+   - [ ] "is in"
+   - [ ] "is not in"
+   - [ ] "is like"
+   - [ ] "is not like"
+   - [ ] "has"
+   - [ ] "has not"
 - [ ] Permitir columnas tipo:
    - [ ] "createdAt"
    - [ ] "updatedAt"
-- [ ] Persistencia de funciones
-   - [ ] personalizar un stringify que soporte funciones
-- [ ] Tests para cada feature.

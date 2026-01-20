@@ -1,9 +1,9 @@
 module.exports = fooldb => {
-  global.assertion = function(condition, message) {
-    if(condition) {
-      console.log("[test][assertion][ok] " + message);
+  global.assertion = function (condition, message) {
+    if (condition) {
+      console.log(colorizer(32, "[test][assertion][OK] " + message));
     } else {
-      console.error("[test][assertion][FAIL] " + message);
+      console.error(colorizer(31, "[test][assertion][FAIL] " + message));
       throw new fooldb.constructor.AssertionError(message);
     }
   };
