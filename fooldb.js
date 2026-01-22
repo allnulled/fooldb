@@ -635,7 +635,7 @@ Fooldb_core_api: {
       const schemaPath = this.composePath("schema.js");
       // El `schema.js` es obligatorio.
       if (runningOn.browserOnly) {
-        this.schema = await FooldbBrowserPolyfill.require(schemaPath);
+        this.schema = await FooldbBrowserRequire(schemaPath);
       } else {
         delete require.cache[schemaPath];
         this.schema = require(schemaPath);
@@ -1078,6 +1078,7 @@ Fooldb_core_api: {
             writeStream.write(line + "\n");
           }
         }
+        await this.$closeFileHandlers(readliner, readStream, writeStream, null);
         await this.constructor.fs.promises.rename(tmpFile, file);
         return updatedIds;
       } finally {
@@ -1122,6 +1123,7 @@ Fooldb_core_api: {
           }
           writeStream.write(line + "\n");
         }
+        await this.$closeFileHandlers(readliner, readStream, writeStream, null);
         await this.constructor.fs.promises.rename(tmpFile, file);
         return deletedIds;
       } finally {

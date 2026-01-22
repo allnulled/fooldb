@@ -2,7 +2,7 @@ module.exports = async fooldb => {
   new fooldb.constructor.AssertionError("Un mensaje cualquiera");
   try {
     fooldb.constructor.assertion(false);
-  } catch {}
+  } catch { }
   try {
     const mce = new fooldb.constructor.MultipleConstraintErrors();
     mce.assertion(false, "Un mensaje cualquiera");
@@ -18,19 +18,23 @@ module.exports = async fooldb => {
   fooldb.isArrayOfIntegers("no");
   fooldb.composePath("whatever");
   fooldb.trace.activate();
-  await fooldb.readJson(__dirname + "/../../../package.json");
-  await fooldb.writeJson(__dirname + "/temporary.json", {});
-  await fooldb.constructor.fs.promises.unlink(__dirname + "/temporary.json");
+  Solo_en_nodejs: {
+    if (fooldb.constructor.runningOn.nodejsOnly) {
+      await fooldb.readJson(__dirname + "/../../../package.json");
+      await fooldb.writeJson(__dirname + "/temporary.json", {});
+      await fooldb.constructor.fs.promises.unlink(__dirname + "/temporary.json");
+    }
+  }
   try {
     await fooldb.insert("Lugar", {
       nombre: "whatever",
       presidente: 1,
       habitantes: ["no"]
     });
-  } catch (error) {}
+  } catch (error) { }
   try {
     await fooldb.insert("Tipo no identificado", {});
-  } catch (error) {}
+  } catch (error) { }
   Tipo_unico_y_nulo: {
     const uid1 = await fooldb.insert("Tipo único y nulo", {});
     const uid2 = await fooldb.insert("Tipo único y nulo", {

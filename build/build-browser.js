@@ -18,7 +18,7 @@ const wrapAsTestModule = function(id, content) {
 
 const wrapAsTestBundle = function(content) {
   let output = "";
-  output += `window.requireInBrowser = (function(make) {\n`;
+  output += `window.FooldbBrowserRequire = (function(make) {\n`;
   output += `  const definitions = {};\n`;
   output += `  const definitionsByOrder = [];\n`;
   output += `  const defineModule = function(id, value) {\n`;

@@ -8,6 +8,7 @@
         html,body {
             padding: 0px;
             margin: 0px;
+            background-color: black;
         }
         #test {
             padding: 4px;
@@ -16,14 +17,20 @@
             background-color: black;
             color: #FFF;
         }
+        .assertion {
+            border-bottom: 1px solid #333;
+            white-space: pre-wrap;
+            padding: 4px;
+        }
         .assertion.ok {
             color: #0F0;
         }
         .assertion.fail {
-            color: #0F0;
+            color: rgb(255, 0, 0);
         }
         .assertion.title {
             color: #FF0;
+            background-color: #222;
         }
     </style>
 </head>
