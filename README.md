@@ -9,13 +9,26 @@ git clone https://github.com/allnulled/fooldb.git .
 npm install
 ```
 
-## Uso
+## Uso en node.js
 
-Para ver más, puedes mirar el [test.js](https://github.com/allnulled/fooldb/blob/main/test.js)
+Para usar en *node.js*, puedes mirar el [test.js](https://github.com/allnulled/fooldb/blob/main/test.js)
 
-## Referencia
+## Uso en navegador
 
-La API está documentada en: [API.md](https://github.com/allnulled/fooldb/blob/main/API.md).
+Para usar en *navegador* hay que importar los 2 ficheros con un `<script src="...">` en este orden:
+
+ - `fooldb.browser-polyfill.js`
+ - `fooldb.js`
+
+## Documentación
+
+La API común está documentada en:
+
+ - [API.md](https://github.com/allnulled/fooldb/blob/main/API.md).
+
+La API del polyfill para navegador está documentada en:
+ 
+ - [API-BROWSER.md](https://github.com/allnulled/fooldb/blob/main/API-BROWSER.md).
 
 ## Más información
 

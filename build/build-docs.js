@@ -22,16 +22,30 @@ const generateTOCFromMarkdown = function (mdText) {
 };
 
 const main = async function () {
-  const apiFile = `${__dirname}/../API.md`;
-  await require("@allnulled/javadoc-brute").extractComments({
-    include: [`${__dirname}/../fooldb.js`],
-    exclude: ["node_modules"],
-    output: apiFile,
-  });
-  const md = await fs.promises.readFile(apiFile, "utf8");
-  const mdToc = generateTOCFromMarkdown(md);
-  const mdWithToc = md.replace("{{ TOC }}", mdToc);
-  await fs.promises.writeFile(apiFile, mdWithToc, "utf8");
+  Nodejs_api: {
+    const apiFile = `${__dirname}/../API.md`;
+    await require("@allnulled/javadoc-brute").extractComments({
+      include: [`${__dirname}/../fooldb.js`],
+      exclude: ["node_modules"],
+      output: apiFile,
+    });
+    const md = await fs.promises.readFile(apiFile, "utf8");
+    const mdToc = generateTOCFromMarkdown(md);
+    const mdWithToc = md.replace("{{ TOC }}", mdToc);
+    await fs.promises.writeFile(apiFile, mdWithToc, "utf8");
+  }
+  Browser_api: {
+    const apiFile = `${__dirname}/../API-BROWSER.md`;
+    await require("@allnulled/javadoc-brute").extractComments({
+      include: [`${__dirname}/../fooldb.browser-polyfill.js`],
+      exclude: ["node_modules"],
+      output: apiFile,
+    });
+    const md = await fs.promises.readFile(apiFile, "utf8");
+    const mdToc = generateTOCFromMarkdown(md);
+    const mdWithToc = md.replace("{{ TOC }}", mdToc);
+    await fs.promises.writeFile(apiFile, mdWithToc, "utf8");
+  }
 };
 
 main();

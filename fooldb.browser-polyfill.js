@@ -1,14 +1,29 @@
 Fooldb_browser_polyfill: {
 
+  /**
+   * 
+   * # API de FooldbBrowserPolyfill
+   * 
+   * {{ TOC }}
+   * 
+   */
+
   const trace = function (message) {
-    console.log(`[trace][fooldb-browser-polyfill] ${message}`);
+    console.log(`[trace][fooldb-browser] ${message}`);
   };
 
   const FooldbIDB = (() => {
     const DB_NAME = "fooldb_fs";
     const STORE = "nodes";
     let dbPromise = null;
-    // Para abrir la base de datos:
+    
+    /**
+     * 
+     * ## `async FooldbBrowserPolyfill.IndexedDBInterface.open()`
+     * 
+     * **Uso interno.**
+     * 
+     */
     const open = async function () {
       trace("FooldbBrowserPolyfill.IndexedDBInterface.open");
       if (dbPromise) return dbPromise;
@@ -25,7 +40,14 @@ Fooldb_browser_polyfill: {
       });
       return dbPromise;
     };
-    // Para obtener un nodo:
+    
+    /**
+     * 
+     * ## `async FooldbBrowserPolyfill.IndexedDBInterface.get(node:String)`
+     * 
+     * **Uso interno.**
+     * 
+     */
     const get = async function (node) {
       trace("FooldbBrowserPolyfill.IndexedDBInterface.get");
       const database = await open();
@@ -37,7 +59,14 @@ Fooldb_browser_polyfill: {
         req.onerror = () => reject(req.error);
       });
     };
-    // Para actualizar un nodo:
+    
+    /**
+     * 
+     * ## `async FooldbBrowserPolyfill.IndexedDBInterface.put(node:String)`
+     * 
+     * **Uso interno.**
+     * 
+     */
     const put = async function (node) {
       trace("FooldbBrowserPolyfill.IndexedDBInterface.put");
       const database = await open();
@@ -49,7 +78,14 @@ Fooldb_browser_polyfill: {
         req.onerror = () => reject(req.error);
       });
     };
-    // Para eliminar un nodo:
+    
+    /**
+     * 
+     * ## `async FooldbBrowserPolyfill.IndexedDBInterface.delete(node:String)`
+     * 
+     * **Uso interno.**
+     * 
+     */
     const del = async function (node) {
       trace("FooldbBrowserPolyfill.IndexedDBInterface.delete");
       const database = await open();
@@ -61,7 +97,14 @@ Fooldb_browser_polyfill: {
         req.onerror = () => reject(req.error);
       });
     };
-    // Para listar los nodos:
+    
+    /**
+     * 
+     * ## `async FooldbBrowserPolyfill.IndexedDBInterface.list(prefix:String)`
+     * 
+     * **Uso interno.**
+     * 
+     */
     const list = async function (prefix) {
       trace("FooldbBrowserPolyfill.IndexedDBInterface.list");
       const database = await open();
@@ -81,7 +124,14 @@ Fooldb_browser_polyfill: {
         req.onerror = () => reject(req.error);
       });
     };
-    // Para eliminar los nodos:
+    
+    /**
+     * 
+     * ## `async FooldbBrowserPolyfill.IndexedDBInterface.deleteAll()`
+     * 
+     * **Uso interno.**
+     * 
+     */
     const deleteAll = async function () {
       trace("FooldbBrowserPolyfill.IndexedDBInterface.deleteAll");
       const database = await open();
@@ -99,7 +149,13 @@ Fooldb_browser_polyfill: {
     return { get, put, delete: del, list, deleteAll };
   })();
 
-
+  /**
+   * 
+   * ## `FooldbBrowserPolyfill.fs.resolve(...subpaths:Array<String>)`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForResolve = function (...subpaths) {
     trace("FooldbBrowserPolyfill.path.resolve");
     let finalPath = "";
@@ -125,6 +181,13 @@ Fooldb_browser_polyfill: {
     return finalPath.replace(/\/+/g, "/");
   };
 
+  /**
+   * 
+   * ## `FooldbBrowserPolyfill.fs.createReadStream(filepath:String)`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForCreateReadStream = function (filepath) {
     trace("FooldbBrowserPolyfill.fs.createReadStream");
     let destroyed = false;
@@ -191,6 +254,13 @@ Fooldb_browser_polyfill: {
     };
   };
 
+  /**
+   * 
+   * ## `FooldbBrowserPolyfill.fs.createWriteStream(filepath:String)`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForCreateWriteStream = function (filepath) {
     trace("FooldbBrowserPolyfill.fs.createWriteStream");
     let buffer = "";
@@ -259,6 +329,13 @@ Fooldb_browser_polyfill: {
     };
   };
 
+  /**
+   * 
+   * ## `async FooldbBrowserPolyfill.fs.promises.readdir(dirpath:String, options:Object)`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForReaddir = async function (dirpath, options = {}) {
     trace("FooldbBrowserPolyfill.fs.promises.readdir");
     const withFileTypes = options.withFileTypes === true;
@@ -290,12 +367,26 @@ Fooldb_browser_polyfill: {
     return withFileTypes ? Array.from(entries.values()) : Array.from(entries.keys());
   }
 
+  /**
+   * 
+   * ## `async FooldbBrowserPolyfill.fs.promises.access(filepath:String)`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForAccess = async function (filepath) {
     trace("FooldbBrowserPolyfill.fs.promises.access");
     const node = await FooldbIDB.get(filepath);
     if (!node) throw new Error(`ENOENT: No such file or directory at «${filepath}»`);
   };
 
+  /**
+   * 
+   * ## `async FooldbBrowserPolyfill.fs.promises.appendFile(filepath:String, content:String, encoding:String = "utf8")`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForAppendFile = async function (filepath, content, encoding = "utf8") {
     trace("FooldbBrowserPolyfill.fs.promises.appendFile");
     // @TODO: comprobar que es un fichero, antes:
@@ -308,6 +399,13 @@ Fooldb_browser_polyfill: {
     }
   };
 
+  /**
+   * 
+   * ## `async FooldbBrowserPolyfill.fs.promises.mkdir(dirpath:String, options:Object = {})`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForMkdir = async function (dirpath, options = {}) {
     trace("FooldbBrowserPolyfill.fs.promises.mkdir");
     // @TODO: comprobar que el directorio padre existe, antes (a no ser que sea recursive):
@@ -318,6 +416,13 @@ Fooldb_browser_polyfill: {
     });
   };
 
+  /**
+   * 
+   * ## `async FooldbBrowserPolyfill.fs.promises.readFile(filepath:String, encoding:String = "utf8")`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForReadFile = async function (filepath, encoding = "utf8") {
     trace("FooldbBrowserPolyfill.fs.promises.readFile");
     // @TODO: comprobar que es un fichero antes:
@@ -328,18 +433,30 @@ Fooldb_browser_polyfill: {
     return node.content;
   };
 
+  /**
+   * 
+   * ## `async FooldbBrowserPolyfill.fs.promises.rename(filepathOrigin:String, filepathDestination:String)`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForRename = async function (filepathOrigin, filepathDestination) {
     trace("FooldbBrowserPolyfill.fs.promises.rename");
     // @TODO: comprobar que solo se está cambiando el nombre, no la localización, antes:
-    console.log(filepathOrigin);
     const node = await FooldbIDB.get(filepathOrigin);
-    console.log(node);
     if (!node) throw new Error("ENOENT");
     node.path = filepathDestination;
     await FooldbIDB.put(node);
     await FooldbIDB.delete(filepathOrigin);
   };
 
+  /**
+   * 
+   * ## `async FooldbBrowserPolyfill.fs.promises.rm(dirpath:String, options:Object = {})`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForRm = async function (dirpath, options = {}) {
     trace("FooldbBrowserPolyfill.fs.promises.rm");
     // @TODO: comprobar que es un directorio antes:
@@ -355,12 +472,26 @@ Fooldb_browser_polyfill: {
     }
   };
 
+  /**
+   * 
+   * ## `async FooldbBrowserPolyfill.fs.promises.unlink(filepath:String)`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForUnlink = async function (filepath) {
     trace("FooldbBrowserPolyfill.fs.promises.unlink");
     // @TODO: comprobar que es un fichero antes:
     await FooldbIDB.delete(filepath);
   };
 
+  /**
+   * 
+   * ## `async FooldbBrowserPolyfill.fs.promises.writeFile(nodepath:String, content:String, encoding:String = "utf8")`
+   * 
+   * **Uso interno.**
+   * 
+   */
   const PolyfillForWriteFile = async function (nodepath, content, encoding = "utf8") {
     trace("FooldbBrowserPolyfill.fs.promises.writeFile");
     // @TODO: comprobar que existe el directorio padre antes:
@@ -371,8 +502,16 @@ Fooldb_browser_polyfill: {
     });
   };
 
-  const PolyfillForCreateInterface = function ({ input }) {
+  /**
+   * 
+   * ## `async FooldbBrowserPolyfill.fs.promises.createInterface(options:Object)`
+   * 
+   * **Uso interno.**
+   * 
+   */
+  const PolyfillForCreateInterface = function (options = {}) {
     trace("FooldbBrowserPolyfill.readline.createInterface");
+    const { input } = options;
     const iterator = input[Symbol.asyncIterator]();
     return {
       async *[Symbol.asyncIterator]() {
