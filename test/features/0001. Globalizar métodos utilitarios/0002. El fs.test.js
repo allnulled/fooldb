@@ -1,3 +1,3 @@
 module.exports = fooldb => {
-  global.fs = fooldb.constructor.fs;
+  globalThis.fs = fooldb.constructor.fs;
 }

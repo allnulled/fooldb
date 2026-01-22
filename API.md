@@ -1,46 +1,66 @@
 # API de Fooldb
 
 1. [API de Fooldb](#api-de-fooldb)
-  2. [`Fooldb.AssertionError:Error`](#fooldbassertionerrorerror)
-  3. [`Fooldb.assertion(condition:Boolean, message:String)`](#fooldbassertionconditionboolean-messagestring)
-  4. [`Fooldb.ConstraintError:Error`](#fooldbconstrainterrorerror)
-  5. [`Fooldb.MultipleConstraintErrors:Array`](#fooldbmultipleconstrainterrorsarray)
-  6. [`Fooldb.MultipleConstraintErrors.prototype.assertion(condition:Boolean, message:String)`](#fooldbmultipleconstrainterrorsprototypeassertionconditionboolean-messagestring)
-  7. [`Fooldb.MultipleConstraintErrors.prototype.throwIfAny()`](#fooldbmultipleconstrainterrorsprototypethrowifany)
-  8. [`Fooldb.MultipleConstraintErrors.prototype.throwIfAnyExcept(errorStartingWith:String)`](#fooldbmultipleconstrainterrorsprototypethrowifanyexcepterrorstartingwithstring)
-  9. [`Fooldb`](#fooldb)
-  10. [`Fooldb.create(...args)`](#fooldbcreateargs)
-  11. [`Fooldb.defaultOptions:Object`](#fooldbdefaultoptionsobject)
-  12. [`Fooldb.uuidAlphabet:Array<String>`](#fooldbuuidalphabetarraystring)
-  13. [`Fooldb.generateUuid(len:Number = 10)`](#fooldbgenerateuuidlennumber-10)
-  14. [`Fooldb.basicTypes:Array<String>`](#fooldbbasictypesarraystring)
-  15. [`Fooldb.isValidDay(text:String):Boolean`](#fooldbisvaliddaytextstringboolean)
-  16. [`Fooldb.isValidHour(text:String):Boolean`](#fooldbisvalidhourtextstringboolean)
-  17. [`Fooldb.isValidMoment(text:String):Boolean`](#fooldbisvalidmomenttextstringboolean)
-  18. [`async Fooldb.$cleanStreams(readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`](#async-fooldbcleanstreamsreadstreamreaderstream-writestreamwriterstream-tmpfilestring)
-  19. [`Fooldb.findMissingElements(array1:Array, array2:Array):Array`](#fooldbfindmissingelementsarray1array-array2arrayarray)
-  20. [`Fooldb.removeElementFromArray(item:any, array:Array)`](#fooldbremoveelementfromarrayitemany-arrayarray)
-  21. [`Fooldb.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`](#fooldbisarrayofintegersarrayofnumbersarrayintegerboolean)
-  22. [`async Fooldb.existsNode(fileOrDirectory:String):Boolean`](#async-fooldbexistsnodefileordirectorystringboolean)
-  23. [`async Fooldb.prototype.readJson(file:String):any`](#async-fooldbprototypereadjsonfilestringany)
-  24. [`async Fooldb.prototype.writeJson(file:String, data:any)`](#async-fooldbprototypewritejsonfilestring-dataany)
-  25. [`Fooldb.prototype.$trace(message:String)`](#fooldbprototypetracemessagestring)
-  26. [`Fooldb.constructor(basedir:String, options:Object = {})`](#fooldbconstructorbasedirstring-optionsobject-)
-  27. [`Fooldb.prototype.trace.activate()`](#fooldbprototypetraceactivate)
-  28. [`Fooldb.prototype.trace.deactivate()`](#fooldbprototypetracedeactivate)
-  29. [`Fooldb.prototype.composePath(...subpaths:Array<String>)`](#fooldbprototypecomposepathsubpathsarraystring)
-  30. [`Fooldb.prototype.loadSchemaFromBasedir()`](#fooldbprototypeloadschemafrombasedir)
-  31. [`Fooldb.prototype.$findMissingUids(table:String, uids:Array<Integer>):Array<Integer>`](#fooldbprototypefindmissinguidstablestring-uidsarrayintegerarrayinteger)
-  32. [`async Fooldb.prototype.$checkTableValueBySchema(table:String, row:Object, operation:String):MultipleConstraintErrors`](#async-fooldbprototypechecktablevaluebyschematablestring-rowobject-operationstringmultipleconstrainterrors)
-  33. [`async Fooldb.prototype.$pickNextId(table:String):String`](#async-fooldbprototypepicknextidtablestringstring)
-  34. [`async Fooldb.prototype.ensureTable(table:String)`](#async-fooldbprototypeensuretabletablestring)
-  35. [`async Fooldb.prototype.ensureTablesBySchema()`](#async-fooldbprototypeensuretablesbyschema)
-  36. [`async Fooldb.prototype.resetTablesBySchema()`](#async-fooldbprototyperesettablesbyschema)
-  37. [`async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`](#async-fooldbprototypeselecttablestring-filterfunctionarrayobject)
-  38. [`async Fooldb.prototype.initialize(table:String, row:Object)`](#async-fooldbprototypeinitializetablestring-rowobject)
-  39. [`async Fooldb.prototype.insert(table:String, row:Object):String`](#async-fooldbprototypeinserttablestring-rowobjectstring)
-  40. [`async Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`](#async-fooldbprototypeupdatetablestring-filterfunction-valueobjectarrayinteger)
-  41. [`async Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`](#async-fooldbprototypedeletetablestring-filterfunctionarrayinteger)
+  2. [`Fooldb.runningOn:Object`](#fooldbrunningonobject)
+  3. [`Fooldb.AssertionError:Error`](#fooldbassertionerrorerror)
+  4. [`Fooldb.assertion(condition:Boolean, message:String)`](#fooldbassertionconditionboolean-messagestring)
+  5. [`Fooldb.ConstraintError:Error`](#fooldbconstrainterrorerror)
+  6. [`Fooldb.MultipleConstraintErrors:Array`](#fooldbmultipleconstrainterrorsarray)
+  7. [`Fooldb.MultipleConstraintErrors.prototype.assertion(condition:Boolean, message:String)`](#fooldbmultipleconstrainterrorsprototypeassertionconditionboolean-messagestring)
+  8. [`Fooldb.MultipleConstraintErrors.prototype.throwIfAny()`](#fooldbmultipleconstrainterrorsprototypethrowifany)
+  9. [`Fooldb.MultipleConstraintErrors.prototype.throwIfAnyExcept(errorStartingWith:String)`](#fooldbmultipleconstrainterrorsprototypethrowifanyexcepterrorstartingwithstring)
+  10. [`Fooldb`](#fooldb)
+  11. [`Fooldb.create(basedir:String)`](#fooldbcreatebasedirstring)
+  12. [`async Fooldb.load(basedir:String):Fooldb`](#async-fooldbloadbasedirstringfooldb)
+  13. [`Fooldb.defaultOptions:Object`](#fooldbdefaultoptionsobject)
+  14. [`Fooldb.uuidAlphabet:Array<String>`](#fooldbuuidalphabetarraystring)
+  15. [`Fooldb.basicTypes:Array<String>`](#fooldbbasictypesarraystring)
+  16. [`Fooldb.constructor(basedir:String, options:Object = {})`](#fooldbconstructorbasedirstring-optionsobject-)
+  17. [`Fooldb.prototype.generateUuid(len:Number = 10)`](#fooldbprototypegenerateuuidlennumber-10)
+  18. [`Fooldb.prototype.isValidDay(text:String):Boolean`](#fooldbprototypeisvaliddaytextstringboolean)
+  19. [`Fooldb.prototype.isValidHour(text:String):Boolean`](#fooldbprototypeisvalidhourtextstringboolean)
+  20. [`Fooldb.prototype.isValidMoment(text:String):Boolean`](#fooldbprototypeisvalidmomenttextstringboolean)
+  21. [`async Fooldb.prototype.$closeFileHandlers(readliner:Readline, readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`](#async-fooldbprototypeclosefilehandlersreadlinerreadline-readstreamreaderstream-writestreamwriterstream-tmpfilestring)
+  22. [`Fooldb.prototype.findMissingElements(array1:Array, array2:Array):Array`](#fooldbprototypefindmissingelementsarray1array-array2arrayarray)
+  23. [`Fooldb.prototype.removeElementFromArray(item:any, array:Array)`](#fooldbprototyperemoveelementfromarrayitemany-arrayarray)
+  24. [`Fooldb.prototype.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`](#fooldbprototypeisarrayofintegersarrayofnumbersarrayintegerboolean)
+  25. [`async Fooldb.prototype.wait(ms:Number)`](#async-fooldbprototypewaitmsnumber)
+  26. [`async Fooldb.prototype.existsNode(fileOrDirectory:String):Boolean`](#async-fooldbprototypeexistsnodefileordirectorystringboolean)
+  27. [`async Fooldb.prototype.readJson(file:String):any`](#async-fooldbprototypereadjsonfilestringany)
+  28. [`async Fooldb.prototype.writeJson(file:String, data:any)`](#async-fooldbprototypewritejsonfilestring-dataany)
+  29. [`async Fooldb.rmdirRecursively(file:String)`](#async-fooldbrmdirrecursivelyfilestring)
+  30. [`Fooldb.prototype.$trace(message:String)`](#fooldbprototypetracemessagestring)
+  31. [`async Fooldb.prototype.load():Fooldb`](#async-fooldbprototypeloadfooldb)
+  32. [`Fooldb.prototype.trace.activate()`](#fooldbprototypetraceactivate)
+  33. [`Fooldb.prototype.trace.deactivate()`](#fooldbprototypetracedeactivate)
+  34. [`Fooldb.prototype.composePath(...subpaths:Array<String>)`](#fooldbprototypecomposepathsubpathsarraystring)
+  35. [`async Fooldb.prototype.loadSchemaFromBasedir()`](#async-fooldbprototypeloadschemafrombasedir)
+  36. [`Fooldb.prototype.$findMissingUids(table:String, uids:Array<Integer>):Array<Integer>`](#fooldbprototypefindmissinguidstablestring-uidsarrayintegerarrayinteger)
+  37. [`async Fooldb.prototype.$checkTableValueBySchema(table:String, row:Object, operation:String):MultipleConstraintErrors`](#async-fooldbprototypechecktablevaluebyschematablestring-rowobject-operationstringmultipleconstrainterrors)
+  38. [`async Fooldb.prototype.$pickNextId(table:String):String`](#async-fooldbprototypepicknextidtablestringstring)
+  39. [`async Fooldb.prototype.ensureTable(table:String)`](#async-fooldbprototypeensuretabletablestring)
+  40. [`async Fooldb.prototype.ensureTablesBySchema()`](#async-fooldbprototypeensuretablesbyschema)
+  41. [`async Fooldb.prototype.resetTablesBySchema()`](#async-fooldbprototyperesettablesbyschema)
+  42. [`async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`](#async-fooldbprototypeselecttablestring-filterfunctionarrayobject)
+  43. [`async Fooldb.prototype.initialize(table:String, row:Object)`](#async-fooldbprototypeinitializetablestring-rowobject)
+  44. [`async Fooldb.prototype.insert(table:String, row:Object):String`](#async-fooldbprototypeinserttablestring-rowobjectstring)
+  45. [`async Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`](#async-fooldbprototypeupdatetablestring-filterfunction-valueobjectarrayinteger)
+  46. [`async Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`](#async-fooldbprototypedeletetablestring-filterfunctionarrayinteger)
+
+## `Fooldb.runningOn:Object`
+
+**Uso interno solamente.**
+
+Contiene indicadores del entorno donde está funcionando el javascript.
+
+```js
+{
+  browser: Boolean,
+  browserOnly: Boolean,
+  nodejs: Boolean,
+  nodejsOnly: Boolean,
+}
+```
 
 ## `Fooldb.AssertionError:Error`
 
@@ -90,9 +110,17 @@ Se usa cuando se llama a `Fooldb.prototype.initialize(...)` y lanza errores de d
 
 Clase principal de la que cuelga toda la API del framework.
 
-## `Fooldb.create(...args)`
+## `Fooldb.create(basedir:String)`
 
-Llama internamente al constructor.
+Método que llama internamente al `Fooldb.constructor(basedir)`. Pero no al `load`, que es necesario para cargar el `schema.js`.
+
+Se recomienda usar directamente `await Fooldb.load(basedir)` para obtener una instancia cargada de `Fooldb`.
+
+## `async Fooldb.load(basedir:String):Fooldb`
+
+Método que llama al `Fooldb.constructor(basedir)` y al `await Fooldb.prototype.load()`.
+
+Devuelve la instancia de `Fooldb` con el `schema` cargado.
 
 ## `Fooldb.defaultOptions:Object`
 
@@ -112,49 +140,66 @@ Objeto con las opciones por defecto, que son:
 
 Caracteres utilizados para generar identificadores únicos largos. Incluye el alfabeto en minúsculas solamente.
 
-## `Fooldb.generateUuid(len:Number = 10)`
-
-**Uso interno solamente.**
-
-Genera un identificador único largo.
-
 ## `Fooldb.basicTypes:Array<String>`
 
 **Uso interno solamente.**
 
 Lista de tipos básicos admitidos. Estos tipos no tienen un formato de validación especial. Son: `string`, `object`, `function`, `number`, `boolean`.
 
-## `Fooldb.isValidDay(text:String):Boolean`
+## `Fooldb.constructor(basedir:String, options:Object = {})`
+
+Método constructor.
+
+Establece `this.basedir` basándose en el parámetro.
+
+Establece `this.options` basándose en `this.constructor.defaultOptions` y el parámetro.
+
+Finalmente, inicializa el `this.schema` llamando a `this.loadSchemaFromBasedir()`.
+
+## `Fooldb.prototype.generateUuid(len:Number = 10)`
+
+**Uso interno solamente.**
+
+Genera un identificador único largo.
+
+## `Fooldb.prototype.isValidDay(text:String):Boolean`
 
 Método que comprueba si un texto es un **día válido**. El formato es: `AAAA/MM/DD`.
 
-## `Fooldb.isValidHour(text:String):Boolean`
+## `Fooldb.prototype.isValidHour(text:String):Boolean`
 
 Método que comprueba si un texto es una **hora válida**. El formato es: `HH:mm:ss`.
 
-## `Fooldb.isValidMoment(text:String):Boolean`
+## `Fooldb.prototype.isValidMoment(text:String):Boolean`
 
 Método que comprueba si un texto es una **hora válida**. El formato es: `AAAA/MM/DD HH:mm:ss`.
 
-## `async Fooldb.$cleanStreams(readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`
+## `async Fooldb.prototype.$closeFileHandlers(readliner:Readline, readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`
 
 **Uso interno solamente.**
 
 Método que destruye los streams que haya abiertos y elimina el fichero temporal si existe.
 
-## `Fooldb.findMissingElements(array1:Array, array2:Array):Array`
+**Nota:** esta función ha dado muchos problemas. Ahora parece que va perfecto. La API de Streams de Node.js es muy poderosa,
+aunque estés trabajando a nivel de JavaScript, puedes poner programas a funcionar contra volúmenes de datos infinitos. Todas las otras
+APIs de ficheros de Node.js, no te permitirían eso.
+
+Este método es clave para que la base de datos no deje *filehandlers* abiertos, y haya inconsistencias luego entre operaciones de ficheros,
+mientras los ficheros puedan escalar a magnitudes mayores.
+
+## `Fooldb.prototype.findMissingElements(array1:Array, array2:Array):Array`
 
 **Uso interno principalmente.**
 
 Método que encuentra los elementos del `array1` que **no aparecen** en el `array2`.
 
-## `Fooldb.removeElementFromArray(item:any, array:Array)`
+## `Fooldb.prototype.removeElementFromArray(item:any, array:Array)`
 
 **Uso interno principalmente.**
 
 Método que elimina un elemento de un array.
 
-## `Fooldb.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`
+## `Fooldb.prototype.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`
 
 **Uso interno principalmente.**
 
@@ -163,7 +208,13 @@ Método que comprueba (devolviendo booleano) si el parámetro es:
   - un `Array`
   - con elementos solamente de tipo `Integer`
 
-## `async Fooldb.existsNode(fileOrDirectory:String):Boolean`
+## `async Fooldb.prototype.wait(ms:Number)`
+
+**Uso interno solamente.**
+
+Método que lanza una espera de tantos milisegundos como `ms:Number`.
+
+## `async Fooldb.prototype.existsNode(fileOrDirectory:String):Boolean`
 
 **Uso interno solamente.**
 
@@ -181,21 +232,29 @@ Método para leer un JSON.
 
 Método para escribir un JSON.
 
+## `async Fooldb.rmdirRecursively(file:String)`
+
+**Uso interno principalmente.**
+
+Elimina ficheros recursivamente, de forma 100% segura.
+
+No vuelve de la Promise por simplemente haber dejado *encoladas* las operaciones de eliminación, como según ChatGPT hace `fs.promises.rm(file, {recursive:true})`.
+
+Este método repasa los nodos recursivamente a mano, y vuelve solo cuando se han borrado todos.
+
 ## `Fooldb.prototype.$trace(message:String)`
 
 **Uso interno solamente.**
 
 Método para traza de llamadas. Imprime por consola un mensaje de traza si `this.options.trace` está en `true`.
 
-## `Fooldb.constructor(basedir:String, options:Object = {})`
+## `async Fooldb.prototype.load():Fooldb`
 
-Método constructor.
+Método que **es necesario llamar** para que cargue el `schema.js`, que es necesario tener cargado para poder hacer operaciones.
 
-Establece `this.basedir` basándose en el parámetro.
+El método es asíncrono porque el fichero en browser se carga asíncronamente.
 
-Establece `this.options` basándose en `this.constructor.defaultOptions` y el parámetro.
-
-Finalmente, inicializa el `this.schema` llamando a `this.loadSchemaFromBasedir()`.
+Por debajo se llama a `await Fooldb.prototype.loadSchemaFromBasedir()`.
 
 ## `Fooldb.prototype.trace.activate()`
 
@@ -209,9 +268,9 @@ Desactiva la opción de trace.
 
 Método para construir rutas relativas a `this.basedir`.
 
-## `Fooldb.prototype.loadSchemaFromBasedir()`
+## `async Fooldb.prototype.loadSchemaFromBasedir()`
 
-Método que carga el `${this.basedir}/schema.js` (debe haberlo, si no lanzará un error) utilizando `require`. Borra el `require.cache` antes.
+Método que carga el `${this.basedir}/schema.js` (debe haberlo, si no lanzará un error) utilizando `require` en node.js y `await FooldbBrowserPolyfill.require` en browser. Borra el `require.cache` antes.
 
 Para ver un ejemplo de `schema` puedes ir a [test/db1/schema.js](https://github.com/allnulled/fooldb/blob/main/test/db1/schema.js).
 
@@ -221,7 +280,7 @@ Para ver un ejemplo de `schema` puedes ir a [test/db1/schema.js](https://github.
 
 Método que encuentra los `uid:Integer` que no aparecen en la `table:String` especificada.
 
-Por debajo usa `Fooldb.prototype.select` y `Fooldb.findMissingElements`.
+Por debajo usa `Fooldb.prototype.select` y `Fooldb.prototype.findMissingElements`.
 
 ## `async Fooldb.prototype.$checkTableValueBySchema(table:String, row:Object, operation:String):MultipleConstraintErrors`
 

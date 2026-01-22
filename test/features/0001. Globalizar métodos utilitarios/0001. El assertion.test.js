@@ -1,5 +1,5 @@
 module.exports = fooldb => {
-  global.assertion = function (condition, message) {
+  globalThis.assertion = function (condition, message) {
     if (condition) {
       console.log(colorizer(32, "[test][assertion][OK] " + message));
     } else {

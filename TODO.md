@@ -9,6 +9,9 @@
 
 Más adelante:
 
+- [ ] Hacer que pase el test de casos de violación de seguridad:
+   - [ ] Que no se pueda actualizar el `uid` ni el `uuid`
+   - [ ] Pero siga respetando 
 - [ ] Soporte para tipo function
    - [ ] Sin hydrate todavía
 - [ ] reference-query con operadores:

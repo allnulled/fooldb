@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fooldb for browser</title>
+    <style>
+        html,body {
+            padding: 0px;
+            margin: 0px;
+        }
+        #test {
+            padding: 4px;
+            font-family: monospace;
+            font-size: 10px;
+            background-color: black;
+            color: #FFF;
+        }
+        .assertion.ok {
+            color: #0F0;
+        }
+        .assertion.fail {
+            color: #0F0;
+        }
+        .assertion.title {
+            color: #FF0;
+        }
+    </style>
+</head>
+<body>
+    <div id="test"></div>
+    <script src="lib/fooldb.browser-polyfill.js"></script>
+    <script src="lib/fooldb.js"></script>
+    <script src="test/utilities.js"></script>
+    <script src="test/modules.js"></script>
+    <script src="test/test.js"></script>
+    <script>
+        window.addEventListener("load", mainTest);
+    </script>
+</body>
+</html>

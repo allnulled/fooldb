@@ -11,16 +11,16 @@ module.exports = async fooldb => {
     assertion(error instanceof fooldb.constructor.ConstraintError, "El error debería ser una instancia de ConstraintError aquí");
   }
   fooldb.trace.deactivate();
-  fooldb.constructor.isValidDay(0);
-  fooldb.constructor.isValidHour(0);
-  fooldb.constructor.isValidMoment(0);
-  fooldb.constructor.isArrayOfIntegers(["no"]);
-  fooldb.constructor.isArrayOfIntegers("no");
+  fooldb.isValidDay(0);
+  fooldb.isValidHour(0);
+  fooldb.isValidMoment(0);
+  fooldb.isArrayOfIntegers(["no"]);
+  fooldb.isArrayOfIntegers("no");
   fooldb.composePath("whatever");
   fooldb.trace.activate();
-  await fooldb.constructor.readJson(__dirname + "/../../../package.json");
-  await fooldb.constructor.writeJson(__dirname + "/temporary.json", {});
-  await require("fs").promises.unlink(__dirname + "/temporary.json");
+  await fooldb.readJson(__dirname + "/../../../package.json");
+  await fooldb.writeJson(__dirname + "/temporary.json", {});
+  await fooldb.constructor.fs.promises.unlink(__dirname + "/temporary.json");
   try {
     await fooldb.insert("Lugar", {
       nombre: "whatever",

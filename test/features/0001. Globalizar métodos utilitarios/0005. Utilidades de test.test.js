@@ -1,5 +1,5 @@
 module.exports = fooldb => {
-  global.expectToThrow = async function(callback, message = "Expected to throw but it did not!") {
+  globalThis.expectToThrow = async function(callback, message = "Expected to throw but it did not!") {
     let mustFail = true;
     try {
       await callback();
@@ -8,7 +8,7 @@ module.exports = fooldb => {
     }
     assertion(!mustFail, message);
   };
-  global.expectPromiseToThrow = async function(promise, message = "Expected to throw but it did not!") {
+  globalThis.expectPromiseToThrow = async function(promise, message = "Expected to throw but it did not!") {
     let mustFail = true;
     try {
       await promise;

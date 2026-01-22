@@ -1,3 +1,3 @@
 module.exports = fooldb => {
-  global.Fooldb = fooldb.constructor;
+  globalThis.Fooldb = fooldb.constructor;
 }
