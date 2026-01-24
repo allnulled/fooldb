@@ -27,10 +27,6 @@
         "habitantes": {
           "type": "referred-array",
           "referredTable": "Persona"
-        },
-        "capital": {
-          "type": "string",
-          "nullable": false
         }
       }
     },

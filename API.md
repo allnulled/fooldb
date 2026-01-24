@@ -279,7 +279,7 @@ Método para construir rutas relativas a `this.basedir`.
 
 ## `async Fooldb.prototype.loadSchemaFromBasedir()`
 
-Método que carga el `${this.basedir}/schema.json` (debe haberlo, si no lanzará un error) utilizando `require` en node.js y `await FooldbBrowserPolyfill.require` en browser. Borra el `require.cache` antes.
+Método que carga el `${this.basedir}/schema.json` (debe haberlo, si no lanzará un error) utilizando `readFile` + `JSON.parse`.
 
 Para ver un ejemplo de `schema` puedes ir a [test/db1/schema.json](https://github.com/allnulled/fooldb/blob/main/test/db1/schema.json).
 

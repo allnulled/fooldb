@@ -51,10 +51,6 @@ window.FooldbBrowserRequire = (function(make) {
                         "habitantes": {
                             "type": "referred-array",
                             "referredTable": "Persona"
-                        },
-                        "capital": {
-                            "type": "string",
-                            "nullable": false
                         }
                     }
                 },
@@ -1127,6 +1123,136 @@ window.FooldbBrowserRequire = (function(make) {
                 }
             });
             assertion(typeof fooldb.schema.tables.Lugar.columns.capital === "object", "La columna Lugar.capital debería ser object ahora");
+        };;
+    });
+    (function(factory) {
+        const modulez = {};
+        factory(modulez);
+        const exportation = modulez.exports;
+        __DEFINE_MODULE__("/test/features/9900. Resetear estados/0010. Resetear esquema al estado inicial.test.js", exportation);
+    })(function(module) {
+        module.exports = module.exports = async fooldb => {
+            const db1SchemaPath = `${fooldb.basedir}/schema.json`;
+            const db1SchemaStructure = {
+                "tables": {
+                    "Persona": {
+                        "columns": {
+                            "nombre": {
+                                "type": "string",
+                                "unique": true
+                            },
+                            "edad": {
+                                "type": "number"
+                            },
+                            "fecha de nacimiento": {
+                                "type": "day"
+                            }
+                        }
+                    },
+                    "Lugar": {
+                        "columns": {
+                            "nombre": {
+                                "type": "string",
+                                "unique": true
+                            },
+                            "presidente": {
+                                "type": "referred-object",
+                                "referredTable": "Persona"
+                            },
+                            "habitantes": {
+                                "type": "referred-array",
+                                "referredTable": "Persona"
+                            }
+                        }
+                    },
+                    "Todos los tipos": {
+                        "openColumns": true,
+                        "columns": {
+                            "nombre de registro": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "string": {
+                                "nullable": true,
+                                "type": "string"
+                            },
+                            "number": {
+                                "nullable": true,
+                                "type": "number"
+                            },
+                            "boolean": {
+                                "nullable": true,
+                                "type": "boolean"
+                            },
+                            "object": {
+                                "nullable": true,
+                                "type": "object"
+                            },
+                            "function": {
+                                "nullable": true,
+                                "type": "function"
+                            },
+                            "referred-object": {
+                                "nullable": true,
+                                "type": "referred-object",
+                                "referredTable": "Persona"
+                            },
+                            "referred-array": {
+                                "nullable": true,
+                                "type": "referred-array",
+                                "referredTable": "Persona"
+                            },
+                            "integer": {
+                                "nullable": true,
+                                "type": "integer"
+                            },
+                            "array": {
+                                "nullable": true,
+                                "type": "array"
+                            },
+                            "day": {
+                                "nullable": true,
+                                "type": "day"
+                            },
+                            "hour": {
+                                "nullable": true,
+                                "type": "hour"
+                            },
+                            "moment": {
+                                "nullable": true,
+                                "type": "moment"
+                            },
+                            "notype": {
+                                "nullable": true,
+                                "type": null
+                            }
+                        }
+                    },
+                    "Tipo no identificado": {
+                        "columns": {
+                            "tipo no identificado": {
+                                "type": "unidentified type"
+                            }
+                        }
+                    },
+                    "Tipo único y nulo": {
+                        "columns": {
+                            "tipo único y nulo": {
+                                "type": "string",
+                                "nullable": true,
+                                "unique": true
+                            },
+                            "otro valor": {
+                                "type": "integer",
+                                "nullable": true,
+                                "unique": false
+                            }
+                        }
+                    }
+                }
+            };
+            await fooldb.constructor.fs.promises.writeFile(db1SchemaPath, JSON.stringify(db1SchemaStructure, null, 2), "utf8");
+            await fooldb.load();
         };;
     });
 

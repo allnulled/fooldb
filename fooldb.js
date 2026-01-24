@@ -626,7 +626,7 @@ Fooldb_core_api: {
      * 
      * ## `async Fooldb.prototype.loadSchemaFromBasedir()`
      * 
-     * Método que carga el `${this.basedir}/schema.json` (debe haberlo, si no lanzará un error) utilizando `require` en node.js y `await FooldbBrowserPolyfill.require` en browser. Borra el `require.cache` antes.
+     * Método que carga el `${this.basedir}/schema.json` (debe haberlo, si no lanzará un error) utilizando `readFile` + `JSON.parse`.
      * 
      * Para ver un ejemplo de `schema` puedes ir a [test/db1/schema.json](https://github.com/allnulled/fooldb/blob/main/test/db1/schema.json).
      * 
@@ -635,15 +635,10 @@ Fooldb_core_api: {
       this.$trace("Fooldb.prototype.loadSchemaFromBasedir");
       const schemaPath = this.composePath("schema.json");
       // El `schema.json` es obligatorio.
-      let unvalidatedSchema = undefined;
-      if (runningOn.browserOnly) {
-        unvalidatedSchema = await FooldbBrowserRequire(schemaPath);
-      } else {
-        delete require.cache[schemaPath];
-        unvalidatedSchema = require(schemaPath);
-      }
-      await this.validateSchema(unvalidatedSchema);
-      this.schema = unvalidatedSchema;
+      const jsonSchema = await this.constructor.fs.promises.readFile(schemaPath);
+      const dataSchema = JSON.parse(jsonSchema);
+      await this.validateSchema(dataSchema);
+      this.schema = dataSchema;
     }
 
     /**
