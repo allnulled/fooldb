@@ -20,10 +20,10 @@
   18. [`Fooldb.prototype.isValidDay(text:String):Boolean`](#fooldbprototypeisvaliddaytextstringboolean)
   19. [`Fooldb.prototype.isValidHour(text:String):Boolean`](#fooldbprototypeisvalidhourtextstringboolean)
   20. [`Fooldb.prototype.isValidMoment(text:String):Boolean`](#fooldbprototypeisvalidmomenttextstringboolean)
-  21. [`async Fooldb.prototype.closeFileHandlers(readliner:Readline, readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`](#async-fooldbprototypeclosefilehandlersreadlinerreadline-readstreamreaderstream-writestreamwriterstream-tmpfilestring)
-  22. [`Fooldb.prototype.findMissingElements(array1:Array, array2:Array):Array`](#fooldbprototypefindmissingelementsarray1array-array2arrayarray)
-  23. [`Fooldb.prototype.removeElementFromArray(item:any, array:Array)`](#fooldbprototyperemoveelementfromarrayitemany-arrayarray)
-  24. [`Fooldb.prototype.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`](#fooldbprototypeisarrayofintegersarrayofnumbersarrayintegerboolean)
+  21. [`Fooldb.prototype.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`](#fooldbprototypeisarrayofintegersarrayofnumbersarrayintegerboolean)
+  22. [`async Fooldb.prototype.closeFileHandlers(readliner:Readline, readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`](#async-fooldbprototypeclosefilehandlersreadlinerreadline-readstreamreaderstream-writestreamwriterstream-tmpfilestring)
+  23. [`Fooldb.prototype.findMissingElements(array1:Array, array2:Array):Array`](#fooldbprototypefindmissingelementsarray1array-array2arrayarray)
+  24. [`Fooldb.prototype.removeElementFromArray(item:any, array:Array)`](#fooldbprototyperemoveelementfromarrayitemany-arrayarray)
   25. [`async Fooldb.prototype.wait(ms:Number)`](#async-fooldbprototypewaitmsnumber)
   26. [`async Fooldb.prototype.existsNode(fileOrDirectory:String):Boolean`](#async-fooldbprototypeexistsnodefileordirectorystringboolean)
   27. [`async Fooldb.prototype.readJson(file:String):any`](#async-fooldbprototypereadjsonfilestringany)
@@ -50,11 +50,12 @@
   48. [`async Fooldb.prototype.validateSchemaColumn(columnSchema:Object)`](#async-fooldbprototypevalidateschemacolumncolumnschemaobject)
   49. [`async Fooldb.prototype.setSchema(schema:Object)`](#async-fooldbprototypesetschemaschemaobject)
   50. [`async Fooldb.prototype.expandSchema(schemaExpansion:Object)`](#async-fooldbprototypeexpandschemaschemaexpansionobject)
-  51. [`async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`](#async-fooldbprototypeselecttablestring-filterfunctionarrayobject)
-  52. [`async Fooldb.prototype.initialize(table:String, row:Object)`](#async-fooldbprototypeinitializetablestring-rowobject)
-  53. [`async Fooldb.prototype.insert(table:String, row:Object):String`](#async-fooldbprototypeinserttablestring-rowobjectstring)
-  54. [`async Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`](#async-fooldbprototypeupdatetablestring-filterfunction-valueobjectarrayinteger)
-  55. [`async Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`](#async-fooldbprototypedeletetablestring-filterfunctionarrayinteger)
+  51. [`async Fooldb.prototype.copyObjectExceptKeys(data:Object, keys:Array<String>):Object`](#async-fooldbprototypecopyobjectexceptkeysdataobject-keysarraystringobject)
+  52. [`async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`](#async-fooldbprototypeselecttablestring-filterfunctionarrayobject)
+  53. [`async Fooldb.prototype.initialize(table:String, row:Object)`](#async-fooldbprototypeinitializetablestring-rowobject)
+  54. [`async Fooldb.prototype.insert(table:String, row:Object):String`](#async-fooldbprototypeinserttablestring-rowobjectstring)
+  55. [`async Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`](#async-fooldbprototypeupdatetablestring-filterfunction-valueobjectarrayinteger)
+  56. [`async Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`](#async-fooldbprototypedeletetablestring-filterfunctionarrayinteger)
 
 ## `Fooldb.runningOn:Object`
 
@@ -121,15 +122,21 @@ Clase principal de la que cuelga toda la API del framework.
 
 ## `Fooldb.create(basedir:String)`
 
+**Uso público.**
+
 Método que llama internamente al `Fooldb.constructor(basedir)`. Pero no al `load`, que es necesario para cargar el `schema.json`.
 
 Se recomienda usar directamente `await Fooldb.load(basedir)` para obtener una instancia cargada de `Fooldb`.
 
 ## `async Fooldb.load(basedir:String):Fooldb`
 
-Método que llama al `Fooldb.constructor(basedir)` y al `await Fooldb.prototype.load()`.
+**Uso público.**
 
-Devuelve la instancia de `Fooldb` con el `schema` cargado.
+Método que llama al `Fooldb.constructor(basedir:String)` y al `await Fooldb.prototype.load()`.
+
+Devuelve la instancia de `Fooldb` con el `this.schema` ya cargado.
+
+Se espera que en la ruta `${basedir}/schema.json` tenga el JSON del schema.
 
 ## `Fooldb.defaultOptions:Object`
 
@@ -173,15 +180,30 @@ Genera un identificador único largo.
 
 ## `Fooldb.prototype.isValidDay(text:String):Boolean`
 
-Método que comprueba si un texto es un **día válido**. El formato es: `AAAA/MM/DD`.
+**Uso interno solamente.**
+
+Método utilitario que comprueba si un texto es un **día válido**. El formato es: `AAAA/MM/DD`.
 
 ## `Fooldb.prototype.isValidHour(text:String):Boolean`
 
-Método que comprueba si un texto es una **hora válida**. El formato es: `HH:mm:ss`.
+**Uso interno solamente.**
+
+Método utilitario que comprueba si un texto es una **hora válida**. El formato es: `HH:mm:ss`.
 
 ## `Fooldb.prototype.isValidMoment(text:String):Boolean`
 
-Método que comprueba si un texto es una **hora válida**. El formato es: `AAAA/MM/DD HH:mm:ss`.
+**Uso interno solamente.**
+
+Método utilitario que comprueba si un texto es una **hora válida**. El formato es: `AAAA/MM/DD HH:mm:ss`.
+
+## `Fooldb.prototype.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`
+
+**Uso interno solamente.**
+
+Método utilitario que comprueba (devolviendo booleano) si el parámetro es:
+
+  - un `Array`
+  - con elementos solamente de tipo `Integer`
 
 ## `async Fooldb.prototype.closeFileHandlers(readliner:Readline, readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`
 
@@ -189,33 +211,23 @@ Método que comprueba si un texto es una **hora válida**. El formato es: `AAAA/
 
 Método que destruye los streams que haya abiertos y elimina el fichero temporal si existe.
 
+Este método es clave para que la base de datos no deje *filehandlers* abiertos, y no haya inconsistencias luego entre operaciones de ficheros.
+
 **Nota:** esta función ha dado muchos problemas. Ahora parece que va perfecto. La API de Streams de Node.js es muy poderosa,
 aunque estés trabajando a nivel de JavaScript, puedes poner programas a funcionar contra volúmenes de datos infinitos. Todas las otras
 APIs de ficheros de Node.js, no te permitirían eso.
 
-Este método es clave para que la base de datos no deje *filehandlers* abiertos, y haya inconsistencias luego entre operaciones de ficheros,
-mientras los ficheros puedan escalar a magnitudes mayores.
-
 ## `Fooldb.prototype.findMissingElements(array1:Array, array2:Array):Array`
 
-**Uso interno principalmente.**
+**Uso interno solamente.**
 
-Método que encuentra los elementos del `array1` que **no aparecen** en el `array2`.
+Método utilitario que encuentra los elementos del `array1` que **no aparecen** en el `array2`.
 
 ## `Fooldb.prototype.removeElementFromArray(item:any, array:Array)`
 
-**Uso interno principalmente.**
+**Uso interno solamente.**
 
-Método que elimina un elemento de un array.
-
-## `Fooldb.prototype.isArrayOfIntegers(arrayOfNumbers:Array<Integer>):Boolean`
-
-**Uso interno principalmente.**
-
-Método que comprueba (devolviendo booleano) si el parámetro es:
-
-  - un `Array`
-  - con elementos solamente de tipo `Integer`
+Método utilitario que elimina un elemento de un array.
 
 ## `async Fooldb.prototype.wait(ms:Number)`
 
@@ -243,7 +255,7 @@ Método para escribir un JSON.
 
 ## `async Fooldb.prototype.deleteFilesRecursively(file:String)`
 
-**Uso interno principalmente.**
+**Uso interno solamente.**
 
 Elimina ficheros recursivamente, de forma 100% segura.
 
@@ -259,33 +271,49 @@ Método para traza de llamadas. Imprime por consola un mensaje de traza si `this
 
 ## `async Fooldb.prototype.load():Fooldb`
 
-Método que **es necesario llamar** para que cargue el `schema.json`, que es necesario tener cargado para poder hacer operaciones.
+**Uso público.**
+
+Método que **es necesario llamar**, después de construir una instancia `Fooldb`, para que cargue el `schema.json`, que es necesario tener cargado para poder hacer operaciones.
 
 El método es asíncrono porque el fichero en browser se carga asíncronamente.
 
 Por debajo se llama a `await Fooldb.prototype.loadSchemaFromBasedir()`.
 
+Si creas la instancia de `Fooldb` directamente con `await Fooldb.load(basedir:String)`, ya no hace falta llamar a este método.
+
+Pero si aplicas cambios en el `schema.json`, sí te interesa llamar a este método desde la instancia ya creada.
+
 ## `Fooldb.prototype.trace.activate()`
+
+**Uso público.**
 
 Activa la opción de trace.
 
 ## `Fooldb.prototype.trace.deactivate()`
 
+**Uso público.**
+
 Desactiva la opción de trace.
 
 ## `Fooldb.prototype.composePath(...subpaths:Array<String>)`
+
+**Uso interno principalmente.**
 
 Método para construir rutas relativas a `this.basedir`.
 
 ## `async Fooldb.prototype.loadSchemaFromBasedir()`
 
+**Uso interno solamente.**
+
 Método que carga el `${this.basedir}/schema.json` (debe haberlo, si no lanzará un error) utilizando `readFile` + `JSON.parse`.
 
 Para ver un ejemplo de `schema` puedes ir a [test/db1/schema.json](https://github.com/allnulled/fooldb/blob/main/test/db1/schema.json).
 
+Si quieres refrescar el `this.schema` basándote en los cambios aplicados a `schema.json`, para eso está `Fooldb.prototype.load()`, que internamente, llama a este.
+
 ## `Fooldb.prototype.findMissingUids(table:String, uids:Array<Integer>):Array<Integer>`
 
-**Uso interno principalmente.**
+**Uso interno solamente.**
 
 Método que encuentra los `uid:Integer` que no aparecen en la `table:String` especificada.
 
@@ -366,6 +394,8 @@ Método que hace un `JSON.stringify` + `JSON.parse` del `data:Jsonable` que se p
 
 ## `async Fooldb.prototype.ensureTable(table:String)`
 
+**Uso interno solamente.**
+
 Método que inicializa:
 
 - El directorio de datos: `${this.basedir}/data`
@@ -375,13 +405,17 @@ Método que inicializa:
 
 ## `async Fooldb.prototype.ensureTablesBySchema()`
 
+**Uso interno solamente.**
+
 Método que llama a `Fooldb.prototype.ensureTable` para cada tabla que haya definida en el `this.schema`.
 
 ## `async Fooldb.prototype.resetTablesBySchema()`
 
+**Uso público.**
+
 Método que elimina toda la base de datos, y vuelve a crear las carpetas de las tablas, desde 0.
 
-Elimina tanto nodos como ids.
+Elimina todo excepto el `schema.json`: tanto nodos como ids. Por tanto, no deja nodos huérfanos.
 
 Usar con precaución.
 
@@ -415,7 +449,15 @@ Método que cambia (y sobreescribe en fichero) el `schema.json`.
 
 Método que cambia (y sobreescribe en fichero) el `schema.json`, igual que `setSchema`, con la diferencia de dejar permanecer las tablas y columnas que no se mencionan.
 
+## `async Fooldb.prototype.copyObjectExceptKeys(data:Object, keys:Array<String>):Object`
+
+**Uso interno principalmente.**
+
+Método utilitario que devuelve un objeto igual que `data:Object` (sin hacer `copify`), con solamente las claves que no aparecen en `keys:Array<String>`.
+
 ## `async Fooldb.prototype.select(table:String, filter:Function):Array<Object>`
+
+**Uso público.**
 
 Método select de una tabla.
 
@@ -423,15 +465,21 @@ La función `filter` solo recibe el `row:Object`.
 
 ## `async Fooldb.prototype.initialize(table:String, row:Object)`
 
+**Uso público.**
+
 Este método es un insert con silencios.
 
 Lo único que si solo lanza errores de duplicación, no propaga el error, simplemente devuelve `false` y no inserta nada.
 
 ## `async Fooldb.prototype.insert(table:String, row:Object):String`
 
+**Uso público.**
+
 Método para insertar una row en una tabla. Hará las comprobaciones pertinentes de constricción de esquema antes.
 
 ## `async Fooldb.prototype.update(table:String, filter:Function, value:Object):Array<Integer>`
+
+**Uso público.**
 
 Método para actualizar registros de una tabla.
 
@@ -440,6 +488,8 @@ El `value:Object` ignorará las claves `uid` y `uuid`, porque se reservan para l
 Devuelve los `uid:Integer` alterados por la operación.
 
 ## `async Fooldb.prototype.delete(table:String, filter:Function):Array<Integer>`
+
+**Uso público.**
 
 Método para eliminar registros de una tabla.
 

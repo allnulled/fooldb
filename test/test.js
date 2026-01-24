@@ -9,6 +9,8 @@ global.colorizer = function color(code, text) {
 
 const main = async function () {
   const fooldb = await Fooldb.load(__dirname + "/databases/db1");
+  fooldb.trace.activate();
+  fooldb.trace.deactivate();
   const featureFilesBrute = await globby(__dirname + "/features/**/*.test.js");
   const featureFiles = featureFilesBrute.sort();
   let featureId = undefined;
@@ -21,6 +23,8 @@ const main = async function () {
       const test = require(featurePath);
       await test(fooldb);
     }
+    const momentoUltimo = (new Date()) - inicio;
+    console.log(colorizer(35, `[test][${momentoUltimo}ms] Tests pasados con éxito!`));
   } catch (error) {
     console.error(colorizer(31, `Error en el test ${featureId}:`));
     console.error(error);

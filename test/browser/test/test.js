@@ -2,18 +2,16 @@ const mainTest = async function () {
   assertion(true, "Iniciando tests de Fooldb...");
   assertion(typeof Fooldb !== "undefined", "Fooldb existe como global");
   assertion(typeof FooldbBrowserPolyfill !== "undefined", "FooldbBrowserPolyfill existe como global");
-  assertion(true, "Creando una instancia de Fooldb", "title");
-  const fooldb = await Fooldb.load("/test/databases/db1");
-  Exportar_instancia_de_tests: {
-    window.FOOLDB_FOR_TESTS = fooldb;
-  }
   assertion(true, "Eliminando todos los nodos anteriores", "title");
   Eliminar_nodos_anteriores: {
     await FooldbBrowserPolyfill.IndexedDBInterface.deleteAll();
   }
-  Parche_para_importar_esquemas_de_tests: {
+  Parche_para_crear_el_directorio_inicial: {
     await FooldbBrowserPolyfill.fs.promises.mkdir("/test");
     await FooldbBrowserPolyfill.fs.promises.mkdir("/test/databases");
+    await FooldbBrowserPolyfill.fs.promises.mkdir("/test/databases/db1");
+  }
+  Parche_para_importar_esquemas_de_tests: {
     const allDatabaseIds = FooldbBrowserRequire.allModulesByOrder.filter(file => file.startsWith("/test/databases/"));
     for (let index = 0; index < allDatabaseIds.length; index++) {
       const databaseId = allDatabaseIds[index];
@@ -22,6 +20,11 @@ const mainTest = async function () {
       // @CAUTION: Cuidado con esta línea si más adelante metemos functions en el schema.json:
       await FooldbBrowserPolyfill.fs.promises.writeFile(databaseId, JSON.stringify(databaseSchema, null, 2));
     }
+  }
+  assertion(true, "Creando una instancia de Fooldb", "title");
+  const fooldb = await Fooldb.load("/test/databases/db1");
+  Exportar_instancia_de_tests: {
+    window.FOOLDB_FOR_TESTS = fooldb;
   }
   // Y aquí ejecutamos los mismos tests de node.js en el browser:
   Ejecucion_de_tests: {

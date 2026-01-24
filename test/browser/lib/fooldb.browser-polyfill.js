@@ -428,7 +428,7 @@ Fooldb_browser_polyfill: {
     // @TODO: comprobar que es un fichero antes:
     const node = await FooldbIDB.get(filepath);
     if (!node || node.type !== "file") {
-      throw new Error("ENOENT");
+      throw new Error(`ENOENT: No such file at «${filepath}»`);
     }
     return node.content;
   };
@@ -444,7 +444,9 @@ Fooldb_browser_polyfill: {
     trace("FooldbBrowserPolyfill.fs.promises.rename");
     // @TODO: comprobar que solo se está cambiando el nombre, no la localización, antes:
     const node = await FooldbIDB.get(filepathOrigin);
-    if (!node) throw new Error("ENOENT");
+    if (!node) {
+      throw new Error(`ENOENT: No such file at «${filepathOrigin}»`);
+    }
     node.path = filepathDestination;
     await FooldbIDB.put(node);
     await FooldbIDB.delete(filepathOrigin);

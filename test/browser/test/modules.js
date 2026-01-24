@@ -1009,7 +1009,6 @@ window.FooldbBrowserRequire = (function(make) {
             fooldb.isArrayOfIntegers(["no"]);
             fooldb.isArrayOfIntegers("no");
             fooldb.composePath("whatever");
-            fooldb.trace.activate();
             Solo_en_nodejs: {
                 if (fooldb.constructor.runningOn.nodejsOnly) {
                     await fooldb.readJson(__dirname + "/../../../package.json");
