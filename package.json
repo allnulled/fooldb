@@ -6,8 +6,8 @@
     "up": "bash gitup.sh",
     "build:docs": "node build/build-docs.js",
     "build:browser": "node build/build-browser.js",
-    "dev": "nodemon -w 'fooldb.js' -w 'fooldb.browser-polyfill.js' -w 'lib' -w 'test/test.js' -w 'lib' -w 'test/features' -w 'test/databases/db1/schema.js' -w 'test/browser/test.js' -e 'js' -x 'nyc npm test'",
-    "dev:nocoverage": "nodemon -w 'fooldb.js' -w 'fooldb.browser-polyfill.js' -w 'lib' -w 'test/test.js' -w 'lib' -w 'test/features' -w 'test/databases/db1/schema.js' -w 'test/browser/test.js' -e 'js' -x 'npm test'",
+    "dev": "nodemon -w 'fooldb.js' -w 'fooldb.browser-polyfill.js' -w 'lib' -w 'test/test.js' -w 'lib' -w 'test/features' -w 'test/browser/test.js' -e 'js' -x 'nyc npm test'",
+    "dev:nocoverage": "nodemon -w 'fooldb.js' -w 'fooldb.browser-polyfill.js' -w 'lib' -w 'test/test.js' -w 'lib' -w 'test/features' -w 'test/browser/test.js' -e 'js' -x 'npm test'",
     "test": "npm run build:browser && node test/test.js",
     "serve:browser": "cd test/browser && sh serve.sh"
   },

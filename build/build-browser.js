@@ -51,13 +51,13 @@ const main = async function () {
   Buil_test_for_browser: {
     const { globby } = require("globby");
     const featureFilesBrute = await globby(`${projectDir}/test/features/**/*.test.js`);
-    const featureFiles = [`${projectDir}/test/databases/db1/schema.js`].concat(featureFilesBrute.sort());
+    const featureFiles = [`${projectDir}/test/databases/db1/schema.json`].concat(featureFilesBrute.sort());
     let content = "";
     for(let index=0; index<featureFiles.length; index++) {
       const featureFile = featureFiles[index];
       const featureId = featureFile.replace(projectDir, "");
       const featureTest = await fs.promises.readFile(featureFile, "utf8");
-      content += wrapAsTestModule(featureId, featureTest);
+      content += wrapAsTestModule(featureId, `module.exports = ${featureTest};`);
     }
     content = wrapAsTestBundle(content);
     const outputFile = `${projectDir}/test/browser/test/modules.js`;

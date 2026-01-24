@@ -193,7 +193,7 @@ Fooldb_core_api: {
      * 
      * ## `Fooldb.create(basedir:String)`
      * 
-     * Método que llama internamente al `Fooldb.constructor(basedir)`. Pero no al `load`, que es necesario para cargar el `schema.js`.
+     * Método que llama internamente al `Fooldb.constructor(basedir)`. Pero no al `load`, que es necesario para cargar el `schema.json`.
      * 
      * Se recomienda usar directamente `await Fooldb.load(basedir)` para obtener una instancia cargada de `Fooldb`.
      * 
@@ -276,6 +276,7 @@ Fooldb_core_api: {
       this.$trace("Fooldb.prototype.constructor");
       this.basedir = basedir;
       this.schema = null;
+      this.isLocked = false;
     }
 
     DEBUG(message) {
@@ -351,7 +352,7 @@ Fooldb_core_api: {
 
     /**
      * 
-     * ## `async Fooldb.prototype.$closeFileHandlers(readliner:Readline, readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`
+     * ## `async Fooldb.prototype.closeFileHandlers(readliner:Readline, readStream:ReaderStream, writeStream:WriterStream, tmpFile:String)`
      * 
      * **Uso interno solamente.**
      * 
@@ -365,8 +366,8 @@ Fooldb_core_api: {
      * mientras los ficheros puedan escalar a magnitudes mayores.
      * 
      */
-    async $closeFileHandlers(readliner, readStream, writeStream, tmpFile) {
-      this.$trace("Fooldb.prototype.$closeFileHandlers");
+    async closeFileHandlers(readliner, readStream, writeStream, tmpFile) {
+      this.$trace("Fooldb.prototype.closeFileHandlers");
       if (readliner) {
         readliner.close();
       }
@@ -518,7 +519,7 @@ Fooldb_core_api: {
 
     /**
      * 
-     * ## `async Fooldb.rmdirRecursively(file:String)`
+     * ## `async Fooldb.prototype.deleteFilesRecursively(file:String)`
      * 
      * **Uso interno principalmente.**
      * 
@@ -529,8 +530,8 @@ Fooldb_core_api: {
      * Este método repasa los nodos recursivamente a mano, y vuelve solo cuando se han borrado todos.
      * 
      */
-    async deleteRecursively(directory) {
-      this.$trace("Fooldb.deleteRecursively");
+    async deleteFilesRecursively(directory) {
+      this.$trace("Fooldb.prototype.deleteFilesRecursively");
       let nodes;
       try {
         nodes = await this.constructor.fs.promises.readdir(directory, { withFileTypes: true });
@@ -543,7 +544,7 @@ Fooldb_core_api: {
       for (const entry of nodes) {
         const fullPath = this.constructor.path.resolve(directory, entry.name);
         if (entry.isDirectory()) {
-          await this.deleteRecursively(fullPath);
+          await this.deleteFilesRecursively(fullPath);
         } else {
           await this.constructor.fs.promises.unlink(fullPath);
         }
@@ -571,7 +572,7 @@ Fooldb_core_api: {
      * 
      * ## `async Fooldb.prototype.load():Fooldb`
      * 
-     * Método que **es necesario llamar** para que cargue el `schema.js`, que es necesario tener cargado para poder hacer operaciones.
+     * Método que **es necesario llamar** para que cargue el `schema.json`, que es necesario tener cargado para poder hacer operaciones.
      * 
      * El método es asíncrono porque el fichero en browser se carga asíncronamente.
      * 
@@ -625,26 +626,29 @@ Fooldb_core_api: {
      * 
      * ## `async Fooldb.prototype.loadSchemaFromBasedir()`
      * 
-     * Método que carga el `${this.basedir}/schema.js` (debe haberlo, si no lanzará un error) utilizando `require` en node.js y `await FooldbBrowserPolyfill.require` en browser. Borra el `require.cache` antes.
+     * Método que carga el `${this.basedir}/schema.json` (debe haberlo, si no lanzará un error) utilizando `require` en node.js y `await FooldbBrowserPolyfill.require` en browser. Borra el `require.cache` antes.
      * 
-     * Para ver un ejemplo de `schema` puedes ir a [test/db1/schema.js](https://github.com/allnulled/fooldb/blob/main/test/db1/schema.js).
+     * Para ver un ejemplo de `schema` puedes ir a [test/db1/schema.json](https://github.com/allnulled/fooldb/blob/main/test/db1/schema.json).
      * 
      */
     async loadSchemaFromBasedir() {
       this.$trace("Fooldb.prototype.loadSchemaFromBasedir");
-      const schemaPath = this.composePath("schema.js");
-      // El `schema.js` es obligatorio.
+      const schemaPath = this.composePath("schema.json");
+      // El `schema.json` es obligatorio.
+      let unvalidatedSchema = undefined;
       if (runningOn.browserOnly) {
-        this.schema = await FooldbBrowserRequire(schemaPath);
+        unvalidatedSchema = await FooldbBrowserRequire(schemaPath);
       } else {
         delete require.cache[schemaPath];
-        this.schema = require(schemaPath);
+        unvalidatedSchema = require(schemaPath);
       }
+      await this.validateSchema(unvalidatedSchema);
+      this.schema = unvalidatedSchema;
     }
 
     /**
      * 
-     * ## `Fooldb.prototype.$findMissingUids(table:String, uids:Array<Integer>):Array<Integer>`
+     * ## `Fooldb.prototype.findMissingUids(table:String, uids:Array<Integer>):Array<Integer>`
      * 
      * **Uso interno principalmente.**
      * 
@@ -653,8 +657,8 @@ Fooldb_core_api: {
      * Por debajo usa `Fooldb.prototype.select` y `Fooldb.prototype.findMissingElements`.
      * 
      */
-    async $findMissingUids(table, uids) {
-      this.$trace("Fooldb.prototype.$findMissingUids");
+    async findMissingUids(table, uids) {
+      this.$trace("Fooldb.prototype.findMissingUids");
       const matchedRows = await this.select(table, row => {
         return uids.indexOf(row.uid) !== -1;
       });
@@ -665,7 +669,7 @@ Fooldb_core_api: {
 
     /**
      * 
-     * ## `async Fooldb.prototype.$checkTableValueBySchema(table:String, row:Object, operation:String):MultipleConstraintErrors`
+     * ## `async Fooldb.prototype.checkTableValueBySchema(table:String, row:Object, operation:String):MultipleConstraintErrors`
      * 
      * **Uso interno solamente.**
      * 
@@ -696,10 +700,10 @@ Fooldb_core_api: {
      *    - Comprueba que todas las propiedades de `row` estén en el `this.schema[table].columns` como claves.
      * 
      */
-    async $checkTableValueBySchema(table, row, operation) {
-      this.$trace("Fooldb.prototype.$checkTableValueBySchema");
-      assertion(typeof this.schema === "object", `Required configuration «schema» to be an object on «$checkTableValueBySchema»`);
-      assertion(table in this.schema.tables, `Required parameter «table» to exist in «this.schema» on «Fooldb.prototype.$checkTableValueBySchema»`);
+    async checkTableValueBySchema(table, row, operation) {
+      this.$trace("Fooldb.prototype.checkTableValueBySchema");
+      assertion(typeof this.schema === "object", `Required configuration «schema» to be an object on «checkTableValueBySchema»`);
+      assertion(table in this.schema.tables, `Required parameter «table» to exist in «this.schema» on «Fooldb.prototype.checkTableValueBySchema»`);
       // File & reader:
       const file = this.composePath(`data/${table}/data.jsonl`);
       // Prepare MultipleConstraintErrors instance:
@@ -723,7 +727,7 @@ Fooldb_core_api: {
           const rowColumnIds = Object.keys(row);
           const extraColumns = this.findMissingElements(rowColumnIds, columnIds);
           this.removeElementFromArray("uid", extraColumns);
-          constraintErrors.assertion(extraColumns.length === 0, `Schema constraint «table.openColumns» is not admitting «${table}» to have columns «${extraColumns.join("»,«")}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+          constraintErrors.assertion(extraColumns.length === 0, `Schema constraint «table.openColumns» is not admitting «${table}» to have columns «${extraColumns.join("»,«")}» on «Fooldb.prototype.checkTableValueBySchema»`);
         }
         for (let index = 0; index < columnIds.length; index++) {
           // Cogemos nombre y definición de la columna:
@@ -739,7 +743,7 @@ Fooldb_core_api: {
           // Por defecto, todos los campos son nullable, esto significa que solo tiene sentido especificar `nullable:false` en el `schema.js`
           const isNullable = typeof columnDefinition.nullable === "undefined" ? false : columnDefinition.nullable;
           const mustBeUnique = columnDefinition.unique === true;
-          const mustBeType = columnDefinition.type || undefined;
+          const mustBeType = columnDefinition.type || null;
           Checking_nullable: {
             // Si es nulable, salta el paso:
             if (isNullable) {
@@ -751,11 +755,11 @@ Fooldb_core_api: {
             }
             // Comprobación del require:
             const hasColumn = typeof row[columnId] !== "undefined";
-            constraintErrors.assertion(hasColumn, `Schema constraint «column.nullable» requires column «${table}.${columnId}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+            constraintErrors.assertion(hasColumn, `Schema constraint «column.nullable» requires column «${table}.${columnId}» while «${operation}» on «Fooldb.prototype.checkTableValueBySchema»`);
           }
           Checking_type: {
             // Si no fuerza el tipo, salta el paso:
-            if (typeof mustBeType === "undefined") {
+            if (mustBeType === null) {
               break Checking_type;
             }
             // Si es un update y tampoco es definido, salta el paso:
@@ -769,41 +773,41 @@ Fooldb_core_api: {
             // Comprobación del tipo:
             if (this.constructor.basicTypes.indexOf(mustBeType) !== -1) {
               // Si el tipo es un básico:
-              constraintErrors.assertion(typeof row[columnId] === mustBeType, `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+              constraintErrors.assertion(typeof row[columnId] === mustBeType, `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.checkTableValueBySchema»`);
             } else {
               // Si el tipo no es un básico:
               if (mustBeType === "integer") {
-                constraintErrors.assertion(Number.isInteger(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
+                constraintErrors.assertion(Number.isInteger(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.checkTableValueBySchema»`)
               } else if (mustBeType === "array") {
-                constraintErrors.assertion(Array.isArray(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
+                constraintErrors.assertion(Array.isArray(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.checkTableValueBySchema»`)
               } else if (mustBeType === "day") {
-                constraintErrors.assertion(this.isValidDay(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
+                constraintErrors.assertion(this.isValidDay(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.checkTableValueBySchema»`)
               } else if (mustBeType === "hour") {
-                constraintErrors.assertion(this.isValidHour(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
+                constraintErrors.assertion(this.isValidHour(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.checkTableValueBySchema»`)
               } else if (mustBeType === "moment") {
-                constraintErrors.assertion(this.isValidMoment(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`)
+                constraintErrors.assertion(this.isValidMoment(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be type «${mustBeType}» while «${operation}» on «Fooldb.prototype.checkTableValueBySchema»`)
               } else if (mustBeType === "referred-object") {
                 const referredTable = columnDefinition.referredTable;
-                const isNumber = constraintErrors.assertion(typeof row[columnId] === "number", `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be number on «Fooldb.prototype.$checkTableValueBySchema»`);
+                const isNumber = constraintErrors.assertion(typeof row[columnId] === "number", `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be number on «Fooldb.prototype.checkTableValueBySchema»`);
                 if (!isNumber) {
                   break Checking_type;
                 }
-                const missingUids = await this.$findMissingUids(referredTable, [row[columnId]]);
-                constraintErrors.assertion(missingUids.length === 0, `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to exist as «uid» in «${referredTable}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+                const missingUids = await this.findMissingUids(referredTable, [row[columnId]]);
+                constraintErrors.assertion(missingUids.length === 0, `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to exist as «uid» in «${referredTable}» on «Fooldb.prototype.checkTableValueBySchema»`);
               } else if (mustBeType === "referred-array") {
                 const referredTable = columnDefinition.referredTable;
-                const isArray = constraintErrors.assertion(Array.isArray(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be array on «Fooldb.prototype.$checkTableValueBySchema»`);
+                const isArray = constraintErrors.assertion(Array.isArray(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be array on «Fooldb.prototype.checkTableValueBySchema»`);
                 if (!isArray) {
                   break Checking_type;
                 }
-                const isArrayOfIntegers = constraintErrors.assertion(this.isArrayOfIntegers(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be array of numbers on «Fooldb.prototype.$checkTableValueBySchema»`);
+                const isArrayOfIntegers = constraintErrors.assertion(this.isArrayOfIntegers(row[columnId]), `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to be array of numbers on «Fooldb.prototype.checkTableValueBySchema»`);
                 if (!isArrayOfIntegers) {
                   break Checking_type;
                 }
-                const missingUids = await this.$findMissingUids(referredTable, row[columnId]);
-                constraintErrors.assertion(missingUids.length === 0, `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to exist as «uid» in «${referredTable}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+                const missingUids = await this.findMissingUids(referredTable, row[columnId]);
+                constraintErrors.assertion(missingUids.length === 0, `Schema constraint «column.type» in case «${mustBeType}» requires column «${table}.${columnId}» to exist as «uid» in «${referredTable}» on «Fooldb.prototype.checkTableValueBySchema»`);
               } else {
-                throw new Error(`Type «${mustBeType}» on «schema» is not recognized as type on column «${table}.${columnId}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+                throw new Error(`Type «${mustBeType}» on «schema» is not recognized as type on column «${table}.${columnId}» on «Fooldb.prototype.checkTableValueBySchema»`);
               }
             }
           }
@@ -832,21 +836,21 @@ Fooldb_core_api: {
               if (value.uid === row.uid) {
                 continue Iterating_rows;
               }
-              constraintErrors.assertion(value[columnId] !== row[columnId], `Schema constraint «column.unique» is avoiding to duplicate «${table}#${value.uid}.${columnId}» while «${operation}» on «Fooldb.prototype.$checkTableValueBySchema»`);
+              constraintErrors.assertion(value[columnId] !== row[columnId], `Schema constraint «column.unique» is avoiding to duplicate «${table}#${value.uid}.${columnId}» while «${operation}» on «Fooldb.prototype.checkTableValueBySchema»`);
             }
             // Cerramos los streams y readliners:
-            await this.$closeFileHandlers(readliner, readStream, null, null);
+            await this.closeFileHandlers(readliner, readStream, null, null);
           }
         }
       } finally {
-        await this.$closeFileHandlers(readliner, readStream, null, null);
+        await this.closeFileHandlers(readliner, readStream, null, null);
       }
       return constraintErrors;
     }
 
     /**
      * 
-     * ## `async Fooldb.prototype.$pickNextId(table:String):String`
+     * ## `async Fooldb.prototype.pickNextId(table:String):String`
      * 
      * **Uso interno solamente.**
      * 
@@ -858,14 +862,88 @@ Fooldb_core_api: {
      *  - Devuelve el `uid` sacado.
      * 
      */
-    async $pickNextId(table) {
-      this.$trace("Fooldb.prototype.$pickNextId");
+    async pickNextId(table) {
+      this.$trace("Fooldb.prototype.pickNextId");
       const filepathForIds = this.composePath(`data/${table}/ids.json`);
-      const contents = await this.constructor.fs.promises.readFile(filepathForIds, "utf8");
-      const json = JSON.parse(contents);
-      const uid = json.NEXT_ID++;
-      await this.constructor.fs.promises.writeFile(filepathForIds, JSON.stringify(json), "utf8");
+      let uid = undefined;
+      await this.withLock(async () => {
+        const contents = await this.constructor.fs.promises.readFile(filepathForIds, "utf8");
+        const json = JSON.parse(contents);
+        uid = json.NEXT_ID++;
+        await this.constructor.fs.promises.writeFile(filepathForIds, JSON.stringify(json), "utf8");
+      });
       return uid;
+    }
+
+    /**
+     * 
+     * ## `async Fooldb.prototype.lockDatabase()`
+     * 
+     * **Uso interno solamente.**
+     * 
+     * Método para bloquear operaciones de persistencia en la base de datos.
+     * 
+     * **Nota:** actualmente usa una variable interna, por lo cual solo funciona con 1 mismo objeto de base de datos.
+     * 
+     */
+    async lockDatabase() {
+      this.$trace("Fooldb.prototype.lockDatabase");
+      while (this.isLocked) {
+        await this.wait(5);
+      }
+      this.isLocked = true;
+    }
+
+    /**
+     * 
+     * ## `async Fooldb.prototype.unlockDatabase()`
+     * 
+     * **Uso interno solamente.**
+     * 
+     * Método para desbloquear operaciones de persistencia en la base de datos.
+     * 
+     * **Nota:** actualmente usa una variable interna, por lo cual solo funciona con 1 mismo objeto de base de datos.
+     * 
+     */
+    unlockDatabase() {
+      this.$trace("Fooldb.prototype.unlockDatabase");
+      this.isLocked = false;
+    }
+
+    /**
+     * 
+     * ## `async Fooldb.prototype.withLock(callback:AsyncFunction)`
+     * 
+     * **Uso interno solamente.**
+     * 
+     * Método que llama a `lockDatabase` y `unlockDatabase` antes y después de una función asícrona, automáticamente.
+     * 
+     * La API usa este método, y los otros dos solo se usan 1 vez en toda la API, dentro de éste.
+     * 
+     * **Nota:** actualmente usa una variable interna, por lo cual solo funciona con 1 mismo objeto de base de datos.
+     * 
+     */
+    async withLock(callback) {
+      this.$trace("Fooldb.prototype.withLock");
+      await this.lockDatabase();
+      try {
+        await callback();
+      } finally {
+        this.unlockDatabase();
+      }
+    }
+
+    /**
+     * 
+     * ## `async Fooldb.prototype.copify(data:Jsonable)`
+     * 
+     * **Uso interno solamente.**
+     * 
+     * Método que hace un `JSON.stringify` + `JSON.parse` del `data:Jsonable` que se pase, devolviendo una copia completamente inconexa del parámetro.
+     * 
+     */
+    copify(data) {
+      return JSON.parse(JSON.stringify(data));
     }
 
     /**
@@ -886,30 +964,32 @@ Fooldb_core_api: {
       const tabledir = `${datadir}/${table}`;
       const tableDataFile = `${tabledir}/data.jsonl`;
       const tableIdsFile = `${tabledir}/ids.json`;
-      Inicializar_carpeta_de_data: {
-        const exists = await this.existsNode(datadir);
-        if (!exists) {
-          await this.constructor.fs.promises.mkdir(datadir);
+      await this.withLock(async () => {
+        Inicializar_carpeta_de_data: {
+          const exists = await this.existsNode(datadir);
+          if (!exists) {
+            await this.constructor.fs.promises.mkdir(datadir);
+          }
         }
-      }
-      Inicializar_carpeta_de_tabla: {
-        const exists = await this.existsNode(tabledir);
-        if (!exists) {
-          await this.constructor.fs.promises.mkdir(tabledir);
+        Inicializar_carpeta_de_tabla: {
+          const exists = await this.existsNode(tabledir);
+          if (!exists) {
+            await this.constructor.fs.promises.mkdir(tabledir);
+          }
         }
-      }
-      Inicializar_fichero_de_datos: {
-        const exists = await this.existsNode(tableDataFile);
-        if (!exists) {
-          await this.constructor.fs.promises.writeFile(tableDataFile, "", "utf8");
+        Inicializar_fichero_de_datos: {
+          const exists = await this.existsNode(tableDataFile);
+          if (!exists) {
+            await this.constructor.fs.promises.writeFile(tableDataFile, "", "utf8");
+          }
         }
-      }
-      Inicializar_fichero_de_ids: {
-        const exists = await this.existsNode(tableIdsFile);
-        if (!exists) {
-          await this.constructor.fs.promises.writeFile(tableIdsFile, JSON.stringify({ NEXT_ID: 1 }), "utf8");
+        Inicializar_fichero_de_ids: {
+          const exists = await this.existsNode(tableIdsFile);
+          if (!exists) {
+            await this.constructor.fs.promises.writeFile(tableIdsFile, JSON.stringify({ NEXT_ID: 1 }), "utf8");
+          }
         }
-      }
+      });
     }
 
     /**
@@ -941,8 +1021,162 @@ Fooldb_core_api: {
      */
     async resetTablesBySchema() {
       this.$trace("Fooldb.prototype.resetTablesBySchema");
-      await this.deleteRecursively(`${this.basedir}/data`);
+      await this.deleteFilesRecursively(`${this.basedir}/data`);
       await this.ensureTablesBySchema();
+    }
+
+    /**
+     * 
+     * ## `async Fooldb.prototype.validateSchema(partialSchema:Object)`
+     * 
+     * **Uso interno solamente.**
+     * 
+     * Método que lanza un error cuando `partialSchema:Object` no es un `this.schema` válido.
+     * 
+     */
+    async validateSchema(fullSchema) {
+      this.$trace("Fooldb.prototype.validateSchema");
+      assertion(typeof fullSchema === "object", `Parameter «fullSchema» must be object on «Fooldb.prototype.validateSchema»`);
+      assertion(typeof fullSchema.tables === "object", `Parameter «fullSchema.tables» must be object on «Fooldb.prototype.validateSchema»`);
+      const tableIds = Object.keys(fullSchema.tables);
+      for (let index = 0; index < tableIds.length; index++) {
+        const tableId = tableIds[index];
+        const tableSchema = fullSchema.tables[tableId];
+        await this.validateSchemaTable(tableSchema, tableId);
+      }
+    }
+
+    /**
+     * 
+     * ## `async Fooldb.prototype.validateSchemaTable(tableSchema:Object)`
+     * 
+     * **Uso interno solamente.**
+     * 
+     * Método que lanza un error cuando `tableSchema:Object` no es un `this.schema.tables[table]` válido.
+     * 
+     */
+    async validateSchemaTable(tableSchema, tableId) {
+      this.$trace("Fooldb.prototype.validateSchemaTable");
+      assertion(typeof tableId === "string", `Parameter «tableId» must be string on «Fooldb.prototype.validateSchemaTable»`);
+      assertion(typeof tableSchema === "object", `Parameter «tableSchema» must be object for table «${tableId}» on «Fooldb.prototype.validateSchemaTable»`);
+      assertion(typeof tableSchema.columns === "object", `Parameter «tableSchema.columns» must be object for table «${tableId}» on «Fooldb.prototype.validateSchemaTable»`);
+      Comprobaciones_nivel_tabla: {
+        if ("openColumns" in tableSchema) {
+          assertion(typeof tableSchema.openColumns === "boolean", `Parameter «tableSchema.openColumns» must be boolean for table «${tableId}» on «Fooldb.prototype.validateSchemaTable»`);
+        }
+      }
+      const columnIds = Object.keys(tableSchema.columns);
+      for (let index = 0; index < columnIds.length; index++) {
+        const columnId = columnIds[index];
+        const columnSchema = tableSchema.columns[columnId];
+        await this.validateSchemaColumn(columnSchema, columnId, tableId);
+      }
+    }
+
+    /**
+     * 
+     * ## `async Fooldb.prototype.validateSchemaColumn(columnSchema:Object)`
+     * 
+     * **Uso interno solamente.**
+     * 
+     * Método que lanza un error cuando `columnSchema:Object` no es un `this.schema.tables[table].columns[column]` válido.
+     * 
+     */
+    async validateSchemaColumn(columnSchema, columnId, tableId) {
+      this.$trace("Fooldb.prototype.validateSchemaColumn");
+      assertion(typeof tableId === "string", `Parameter «tableId» must be string on «Fooldb.prototype.validateSchemaColumn»`);
+      assertion(typeof columnId === "string", `Parameter «columnId» must be string on «Fooldb.prototype.validateSchemaColumn»`);
+      assertion(typeof columnSchema === "object", `Parameter «columnSchema» must be object for column «${tableId}.${columnId}» on «Fooldb.prototype.validateSchemaColumn»`);
+      Comprobaciones_nivel_columna: {
+        if ("nullable" in columnSchema) {
+          assertion(typeof columnSchema.nullable === "boolean", `Parameter «columnSchema.nullable» must be boolean for column «${tableId}.${columnId}» on «Fooldb.prototype.validateSchemaColumn»`);
+        }
+        if ("unique" in columnSchema) {
+          assertion(typeof columnSchema.unique === "boolean", `Parameter «columnSchema.unique» must be boolean for column «${tableId}.${columnId}» on «Fooldb.prototype.validateSchemaColumn»`);
+        }
+        if ("type" in columnSchema) {
+          assertion((typeof columnSchema.type === "string") || (columnSchema.type === null), `Parameter «columnSchema.type» must be string or null for column «${tableId}.${columnId}» on «Fooldb.prototype.validateSchemaColumn»`);
+        }
+      }
+    }
+
+    /**
+     * 
+     * ## `async Fooldb.prototype.setSchema(schema:Object)`
+     * 
+     * **Uso público.**
+     * 
+     * Método que cambia (y sobreescribe en fichero) el `schema.json`.
+     * 
+     */
+    async setSchema(schema) {
+      this.$trace("Fooldb.prototype.setSchema");
+      await this.validateSchema(schema);
+      await this.constructor.fs.promises.writeFile(`${this.basedir}/schema.json`, JSON.stringify(schema, null, 2), "utf8");
+      await this.loadSchemaFromBasedir();
+    }
+
+    /**
+     * 
+     * ## `async Fooldb.prototype.expandSchema(schemaExpansion:Object)`
+     * 
+     * **Uso público.**
+     * 
+     * Método que cambia (y sobreescribe en fichero) el `schema.json`, igual que `setSchema`, con la diferencia de dejar permanecer las tablas y columnas que no se mencionan.
+     * 
+     */
+    async expandSchema(schemaExpansion) {
+      this.$trace("Fooldb.prototype.expandSchema");
+      await this.validateSchema(schemaExpansion);
+      const baseSchema = this.copify(this.schema);
+      Expanding_all_tables: {
+        if (!schemaExpansion.tables) {
+          break Expanding_all_tables;
+        }
+        const tableIds = Object.keys(schemaExpansion.tables);
+        Iterating_tables:
+        for (let indexTableId = 0; indexTableId < tableIds.length; indexTableId++) {
+          const tableId = tableIds[indexTableId];
+          const tableSchema = schemaExpansion.tables[tableId];
+          const tableExisted = tableId in baseSchema.tables;
+          if (!tableExisted) {
+            baseSchema.tables[tableId] = tableSchema;
+            baseSchema.tables[tableId].columns = {};
+            continue Iterating_tables;
+          }
+          const tableKeys = Object.keys(schemaExpansion.tables[tableId]).filter(key => key !== "columns");
+          Overriding_table_keys:
+          for (let indexTableKey = 0; indexTableKey < tableKeys.length; indexTableKey++) {
+            const tableKey = tableKeys[indexTableKey];
+            baseSchema.tables[tableId][tableKey] = schemaExpansion.tables[tableId][tableKey];
+          }
+          Expanding_all_columns: {
+            const columnIds = Object.keys(schemaExpansion.tables[tableId].columns || {});
+            Iterating_columns:
+            for (let indexColumns = 0; indexColumns < columnIds.length; indexColumns++) {
+              const columnId = columnIds[indexColumns];
+              if(!(columnId in baseSchema.tables[tableId].columns)) {
+                baseSchema.tables[tableId].columns[columnId] = {};
+              }
+              Overriding_column_keys: {
+                Object.assign(baseSchema.tables[tableId].columns[columnId], schemaExpansion.tables[tableId].columns[columnId]);
+              }
+            }
+          }
+        }
+      }
+      await this.setSchema(baseSchema);
+    }
+
+    copyObjectExceptKeys(data, keys) {
+      this.$trace("Fooldb.prototype.copyObjectExceptKeys");
+      const output = {};
+      const validKeys = Object.keys(data).filter(key => keys.indexOf(key) === -1);
+      for(let index=0; index<validKeys.length; index++) {
+        const validKey = validKeys[index];
+        output[validKey] = data[validKey];
+      }
+      return output;
     }
 
     /**
@@ -981,7 +1215,7 @@ Fooldb_core_api: {
           }
         }
       } finally {
-        await this.$closeFileHandlers(readliner, readStream, null, null);
+        await this.closeFileHandlers(readliner, readStream, null, null);
       }
       return dataset;
     }
@@ -999,18 +1233,20 @@ Fooldb_core_api: {
       this.$trace("Fooldb.prototype.initialize");
       assertion(typeof table === "string", "Parameter «table» must be «string» on «Fooldb.prototype.initialize»");
       assertion((typeof row === "object") && (row !== null), "Parameter «row» must be «object» on «Fooldb.prototype.initialize»");
-      const constraintErrors = await this.$checkTableValueBySchema(table, row, "initializing");
+      const constraintErrors = await this.checkTableValueBySchema(table, row, "initializing");
       constraintErrors.throwIfAnyExcept("Schema constraint «column.unique»");
       if (constraintErrors.length) {
         // Si tiene errores, no se inserta:
         return false;
       }
       const file = this.composePath(`data/${table}/data.jsonl`);
-      const uid = await this.$pickNextId(table);
+      const uid = await this.pickNextId(table);
       const uuid = this.generateUuid();
-      const record = Object.assign({ uid, uuid }, row);
+      const record = Object.assign({ uid, uuid }, row, { uid, uuid });
       const line = JSON.stringify(record) + "\n";
-      await this.constructor.fs.promises.appendFile(file, line, "utf8");
+      await this.withLock(async () => {
+        await this.constructor.fs.promises.appendFile(file, line, "utf8");
+      });
       return uid;
     }
 
@@ -1025,13 +1261,16 @@ Fooldb_core_api: {
       this.$trace("Fooldb.prototype.insert");
       assertion(typeof table === "string", "Parameter «table» must be «string» on «Fooldb.prototype.insert»");
       assertion((typeof row === "object") && (row !== null), "Parameter «row» must be «object» on «Fooldb.prototype.insert»");
-      const constraintErrors = await this.$checkTableValueBySchema(table, row, "inserting");
+      const constraintErrors = await this.checkTableValueBySchema(table, row, "inserting");
       constraintErrors.throwIfAny();
       const file = this.composePath(`data/${table}/data.jsonl`);
-      const uid = await this.$pickNextId(table);
-      const record = Object.assign({}, row, { uid });
+      const uid = await this.pickNextId(table);
+      const uuid = this.generateUuid();
+      const record = Object.assign({}, { uid, uuid }, row, { uid, uuid });
       const line = JSON.stringify(record) + "\n";
-      await this.constructor.fs.promises.appendFile(file, line, "utf8");
+      await this.withLock(async () => {
+        await this.constructor.fs.promises.appendFile(file, line, "utf8");
+      });
       return uid;
     }
 
@@ -1041,6 +1280,8 @@ Fooldb_core_api: {
      * 
      * Método para actualizar registros de una tabla.
      * 
+     * El `value:Object` ignorará las claves `uid` y `uuid`, porque se reservan para la gestión interna de la base de datos.
+     * 
      * Devuelve los `uid:Integer` alterados por la operación.
      * 
      */
@@ -1049,7 +1290,7 @@ Fooldb_core_api: {
       assertion(typeof table === "string", "Parameter «table» must be «string» on «Fooldb.prototype.update»");
       assertion(typeof filter === "function", "Parameter «filter» must be «function» on «Fooldb.prototype.update»");
       assertion((typeof values === "object") && (values !== null), "Parameter «values» must be «object» on «Fooldb.prototype.update»");
-      const constraintErrors = await this.$checkTableValueBySchema(table, values, "updating");
+      const constraintErrors = await this.checkTableValueBySchema(table, values, "updating");
       constraintErrors.throwIfAny();
       const uuid = this.generateUuid();
       const file = this.composePath(`data/${table}/data.jsonl`);
@@ -1058,6 +1299,7 @@ Fooldb_core_api: {
       let writeStream;
       let readStream;
       let readliner;
+      const valuesWithoutUids = this.copyObjectExceptKeys(values, ["uid", "uuid"]);
       try {
         readStream = this.constructor.fs.createReadStream(file, { encoding: "utf8" });
         writeStream = this.constructor.fs.createWriteStream(tmpFile, { encoding: "utf8" });
@@ -1066,23 +1308,25 @@ Fooldb_core_api: {
           crlfDelay: Infinity
         });
         let updatedRecord = undefined;
-        Iterating_rows:
-        for await (const line of readliner) {
-          if (!line.trim()) continue Iterating_rows;
-          const row = JSON.parse(line);
-          if (filter(row)) {
-            updatedRecord = Object.assign({}, row, values);
-            updatedIds.push(updatedRecord.uid);
-            writeStream.write(JSON.stringify(updatedRecord) + "\n");
-          } else {
-            writeStream.write(line + "\n");
+        await this.withLock(async () => {
+          Iterating_rows:
+          for await (const line of readliner) {
+            if (!line.trim()) continue Iterating_rows;
+            const row = JSON.parse(line);
+            if (filter(row)) {
+              updatedRecord = Object.assign({}, row, valuesWithoutUids);
+              updatedIds.push(updatedRecord.uid);
+              writeStream.write(JSON.stringify(updatedRecord) + "\n");
+            } else {
+              writeStream.write(line + "\n");
+            }
           }
-        }
-        await this.$closeFileHandlers(readliner, readStream, writeStream, null);
-        await this.constructor.fs.promises.rename(tmpFile, file);
+          await this.closeFileHandlers(readliner, readStream, writeStream, null);
+          await this.constructor.fs.promises.rename(tmpFile, file);
+        });
         return updatedIds;
       } finally {
-        await this.$closeFileHandlers(readliner, readStream, writeStream, tmpFile);
+        await this.closeFileHandlers(readliner, readStream, writeStream, tmpFile);
       }
     }
 
@@ -1113,21 +1357,23 @@ Fooldb_core_api: {
           input: readStream,
           crlfDelay: Infinity
         });
-        for await (const line of readliner) {
-          // Esta línea la metió ChatGPT para sugerir que, en un futuro, donde pudiera haber indexación, las líneas en blanco permanecerían en las rows eliminadas, y el número de línea serviría como índice.
-          if (!line.trim()) continue;
-          const obj = JSON.parse(line);
-          if (filter(obj)) {
-            deletedIds.push(obj.uid);
-            continue;
+        await this.withLock(async () => {
+          for await (const line of readliner) {
+            // Esta línea la metió ChatGPT para sugerir que, en un futuro, donde pudiera haber indexación, las líneas en blanco permanecerían en las rows eliminadas, y el número de línea serviría como índice.
+            if (!line.trim()) continue;
+            const obj = JSON.parse(line);
+            if (filter(obj)) {
+              deletedIds.push(obj.uid);
+              continue;
+            }
+            writeStream.write(line + "\n");
           }
-          writeStream.write(line + "\n");
-        }
-        await this.$closeFileHandlers(readliner, readStream, writeStream, null);
-        await this.constructor.fs.promises.rename(tmpFile, file);
+          await this.closeFileHandlers(readliner, readStream, writeStream, null);
+          await this.constructor.fs.promises.rename(tmpFile, file);
+        });
         return deletedIds;
       } finally {
-        await this.$closeFileHandlers(readliner, readStream, writeStream, tmpFile);
+        await this.closeFileHandlers(readliner, readStream, writeStream, tmpFile);
       }
     }
 

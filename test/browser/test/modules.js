@@ -20,120 +20,125 @@ window.FooldbBrowserRequire = (function(make) {
         const modulez = {};
         factory(modulez);
         const exportation = modulez.exports;
-        __DEFINE_MODULE__("/test/databases/db1/schema.js", exportation);
+        __DEFINE_MODULE__("/test/databases/db1/schema.json", exportation);
     })(function(module) {
         module.exports = {
-            tables: {
+            "tables": {
                 "Persona": {
-                    columns: {
+                    "columns": {
                         "nombre": {
-                            type: "string",
-                            unique: true,
+                            "type": "string",
+                            "unique": true
                         },
                         "edad": {
-                            type: "number",
+                            "type": "number"
                         },
                         "fecha de nacimiento": {
-                            type: "day",
-                        },
+                            "type": "day"
+                        }
                     }
                 },
                 "Lugar": {
-                    columns: {
+                    "columns": {
                         "nombre": {
-                            type: "string",
-                            unique: true,
+                            "type": "string",
+                            "unique": true
                         },
                         "presidente": {
-                            type: "referred-object",
-                            referredTable: "Persona"
+                            "type": "referred-object",
+                            "referredTable": "Persona"
                         },
                         "habitantes": {
-                            type: "referred-array",
-                            referredTable: "Persona",
+                            "type": "referred-array",
+                            "referredTable": "Persona"
+                        },
+                        "capital": {
+                            "type": "string",
+                            "nullable": false
                         }
                     }
                 },
                 "Todos los tipos": {
-                    openColumns: true,
-                    columns: {
+                    "openColumns": true,
+                    "columns": {
                         "nombre de registro": {
-                            type: "string",
-                            nullable: true,
+                            "type": "string",
+                            "nullable": true
                         },
                         "string": {
-                            nullable: true,
-                            type: "string",
+                            "nullable": true,
+                            "type": "string"
                         },
                         "number": {
-                            nullable: true,
-                            type: "number",
+                            "nullable": true,
+                            "type": "number"
                         },
                         "boolean": {
-                            nullable: true,
-                            type: "boolean",
+                            "nullable": true,
+                            "type": "boolean"
                         },
                         "object": {
-                            nullable: true,
-                            type: "object",
+                            "nullable": true,
+                            "type": "object"
                         },
                         "function": {
-                            nullable: true,
-                            type: "function",
+                            "nullable": true,
+                            "type": "function"
                         },
                         "referred-object": {
-                            nullable: true,
-                            type: "referred-object",
-                            referredTable: "Persona",
+                            "nullable": true,
+                            "type": "referred-object",
+                            "referredTable": "Persona"
                         },
                         "referred-array": {
-                            nullable: true,
-                            type: "referred-array",
-                            referredTable: "Persona",
+                            "nullable": true,
+                            "type": "referred-array",
+                            "referredTable": "Persona"
                         },
                         "integer": {
-                            nullable: true,
-                            type: "integer",
+                            "nullable": true,
+                            "type": "integer"
                         },
                         "array": {
-                            nullable: true,
-                            type: "array",
+                            "nullable": true,
+                            "type": "array"
                         },
                         "day": {
-                            nullable: true,
-                            type: "day",
+                            "nullable": true,
+                            "type": "day"
                         },
                         "hour": {
-                            nullable: true,
-                            type: "hour",
+                            "nullable": true,
+                            "type": "hour"
                         },
                         "moment": {
-                            nullable: true,
-                            type: "moment",
+                            "nullable": true,
+                            "type": "moment"
                         },
                         "notype": {
-                            nullable: true,
-                            type: undefined,
+                            "nullable": true,
+                            "type": null
                         }
                     }
                 },
                 "Tipo no identificado": {
-                    columns: {
+                    "columns": {
                         "tipo no identificado": {
-                            type: "unidentified type"
+                            "type": "unidentified type"
                         }
                     }
                 },
                 "Tipo único y nulo": {
-                    columns: {
+                    "columns": {
                         "tipo único y nulo": {
-                            type: "string",
-                            nullable: true,
-                            unique: true,
+                            "type": "string",
+                            "nullable": true,
+                            "unique": true
                         },
                         "otro valor": {
-                            type: "integer",
-                            nullable: true,
+                            "type": "integer",
+                            "nullable": true,
+                            "unique": false
                         }
                     }
                 }
@@ -144,9 +149,139 @@ window.FooldbBrowserRequire = (function(make) {
         const modulez = {};
         factory(modulez);
         const exportation = modulez.exports;
+        __DEFINE_MODULE__("/test/features/0000. Resetear estados/0010. Resetear esquema al estado inicial.test.js", exportation);
+    })(function(module) {
+        module.exports = module.exports = async fooldb => {
+            const db1SchemaPath = `${fooldb.basedir}/schema.json`;
+            const db1SchemaStructure = {
+                "tables": {
+                    "Persona": {
+                        "columns": {
+                            "nombre": {
+                                "type": "string",
+                                "unique": true
+                            },
+                            "edad": {
+                                "type": "number"
+                            },
+                            "fecha de nacimiento": {
+                                "type": "day"
+                            }
+                        }
+                    },
+                    "Lugar": {
+                        "columns": {
+                            "nombre": {
+                                "type": "string",
+                                "unique": true
+                            },
+                            "presidente": {
+                                "type": "referred-object",
+                                "referredTable": "Persona"
+                            },
+                            "habitantes": {
+                                "type": "referred-array",
+                                "referredTable": "Persona"
+                            }
+                        }
+                    },
+                    "Todos los tipos": {
+                        "openColumns": true,
+                        "columns": {
+                            "nombre de registro": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "string": {
+                                "nullable": true,
+                                "type": "string"
+                            },
+                            "number": {
+                                "nullable": true,
+                                "type": "number"
+                            },
+                            "boolean": {
+                                "nullable": true,
+                                "type": "boolean"
+                            },
+                            "object": {
+                                "nullable": true,
+                                "type": "object"
+                            },
+                            "function": {
+                                "nullable": true,
+                                "type": "function"
+                            },
+                            "referred-object": {
+                                "nullable": true,
+                                "type": "referred-object",
+                                "referredTable": "Persona"
+                            },
+                            "referred-array": {
+                                "nullable": true,
+                                "type": "referred-array",
+                                "referredTable": "Persona"
+                            },
+                            "integer": {
+                                "nullable": true,
+                                "type": "integer"
+                            },
+                            "array": {
+                                "nullable": true,
+                                "type": "array"
+                            },
+                            "day": {
+                                "nullable": true,
+                                "type": "day"
+                            },
+                            "hour": {
+                                "nullable": true,
+                                "type": "hour"
+                            },
+                            "moment": {
+                                "nullable": true,
+                                "type": "moment"
+                            },
+                            "notype": {
+                                "nullable": true,
+                                "type": null
+                            }
+                        }
+                    },
+                    "Tipo no identificado": {
+                        "columns": {
+                            "tipo no identificado": {
+                                "type": "unidentified type"
+                            }
+                        }
+                    },
+                    "Tipo único y nulo": {
+                        "columns": {
+                            "tipo único y nulo": {
+                                "type": "string",
+                                "nullable": true,
+                                "unique": true
+                            },
+                            "otro valor": {
+                                "type": "integer",
+                                "nullable": true,
+                                "unique": false
+                            }
+                        }
+                    }
+                }
+            };
+            await fooldb.constructor.fs.promises.writeFile(db1SchemaPath, JSON.stringify(db1SchemaStructure, null, 2), "utf8");
+            await fooldb.load();
+        };;
+    });
+    (function(factory) {
+        const modulez = {};
+        factory(modulez);
+        const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0001. Globalizar métodos utilitarios/0001. El assertion.test.js", exportation);
     })(function(module) {
-        module.exports = fooldb => {
+        module.exports = module.exports = fooldb => {
             globalThis.assertion = function(condition, message) {
                 if (condition) {
                     console.log(colorizer(32, "[test][assertion][OK] " + message));
@@ -155,7 +290,7 @@ window.FooldbBrowserRequire = (function(make) {
                     throw new fooldb.constructor.AssertionError(message);
                 }
             };
-        }
+        };
     });
     (function(factory) {
         const modulez = {};
@@ -163,9 +298,9 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0001. Globalizar métodos utilitarios/0002. El fs.test.js", exportation);
     })(function(module) {
-        module.exports = fooldb => {
+        module.exports = module.exports = fooldb => {
             globalThis.fs = fooldb.constructor.fs;
-        }
+        };
     });
     (function(factory) {
         const modulez = {};
@@ -173,9 +308,9 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0001. Globalizar métodos utilitarios/0003. El Fooldb.test.js", exportation);
     })(function(module) {
-        module.exports = fooldb => {
+        module.exports = module.exports = fooldb => {
             globalThis.Fooldb = fooldb.constructor;
-        }
+        };
     });
     (function(factory) {
         const modulez = {};
@@ -183,7 +318,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0001. Globalizar métodos utilitarios/0005. Utilidades de test.test.js", exportation);
     })(function(module) {
-        module.exports = fooldb => {
+        module.exports = module.exports = fooldb => {
             globalThis.expectToThrow = async function(callback, message = "Expected to throw but it did not!") {
                 let mustFail = true;
                 try {
@@ -202,7 +337,7 @@ window.FooldbBrowserRequire = (function(make) {
                 }
                 assertion(!mustFail, message);
             };
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -210,7 +345,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0010. Operaciones principales/0001. Resetear tablas.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
 
             await fooldb.resetTablesBySchema();
 
@@ -238,7 +373,7 @@ window.FooldbBrowserRequire = (function(make) {
             assertion(await fooldb.existsNode(fooldb.basedir + "/data/Todos los tipos/data.jsonl"), "El fichero «data/Todos los tipos/data.jsonl» debería existir ahora");
             assertion(await fooldb.existsNode(fooldb.basedir + "/data/Todos los tipos/ids.json"), "El fichero «data/Todos los tipos/ids.json» debería existir ahora");
 
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -246,7 +381,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0010. Operaciones principales/0010. Insertar datos.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             const Persona1 = await fooldb.insert("Persona", {
                 "nombre": "Persona1",
                 "edad": 35,
@@ -272,7 +407,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "presidente": Persona1,
                 "habitantes": [Persona1, Persona2, Persona3],
             });
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -280,12 +415,12 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0010. Operaciones principales/0015. Seleccionar datos.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             const Persona1 = await fooldb.select("Persona", row => row.nombre === "Persona1");
             const Lugar1 = await fooldb.select("Lugar", row => row.nombre === "Lugar1");
             assertion(Persona1.length === 1, "Persona1 debería tener 1 row ahora");
             assertion(Lugar1.length === 1, "Lugar1 debería tener 1 row ahora");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -293,7 +428,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0010. Operaciones principales/0020. Actualizar datos.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.update("Persona", row => row.nombre === "Persona2", {
                 nombre: "Persona2 modificada"
             })
@@ -304,7 +439,7 @@ window.FooldbBrowserRequire = (function(make) {
             const Lugar2 = await fooldb.select("Lugar", row => row.nombre === "Lugar2 modificado");
             assertion(Persona2.length === 1, "Persona2 debería tener 1 row ahora");
             assertion(Lugar2.length === 1, "Lugar2 debería tener 1 row ahora");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -312,14 +447,14 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0010. Operaciones principales/0025. Eliminar datos.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.delete("Persona", row => row.nombre === "Persona2 modificada");
             await fooldb.delete("Lugar", row => row.nombre === "Lugar2 modificado");
             const Persona2 = await fooldb.select("Persona", row => row.nombre === "Persona2 modificada");
             const Lugar2 = await fooldb.select("Lugar", row => row.nombre === "Lugar2 modificado");
             assertion(Persona2.length === 0, "Persona2 debería tener 0 rows ahora");
             assertion(Lugar2.length === 0, "Lugar2 debería tener 0 rows ahora");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -327,7 +462,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0010. Operaciones principales/030. Inicializar datos.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.initialize("Persona", {
                 nombre: "Persona 4",
                 edad: 33,
@@ -343,7 +478,7 @@ window.FooldbBrowserRequire = (function(make) {
             assertion(allPersonas.length === 3, "allPersonas debería tener 3 rows ahora");
             const persona4 = allPersonas.filter(persona => persona.nombre === "Persona 4")[0];
             assertion(persona4.edad === 33, "Objeto persona4 debería tener edad 33 ahora");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -351,7 +486,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0005. Tipo string.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {string} (1)",
                 "string": "texto",
@@ -382,7 +517,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": null,
                 "moment": null,
             }), "Debería de haber lanzado un error porque columna «{string}» es un número");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -390,7 +525,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0010. Tipo number.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {number} (1)",
                 "string": null,
@@ -421,7 +556,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": null,
                 "moment": null,
             }), "Debería de haber lanzado un error porque columna «{number}» es un texto");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -429,7 +564,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0015. Tipo boolean.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {boolean} (1)",
                 "string": null,
@@ -460,7 +595,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": null,
                 "moment": null,
             }), "Debería de haber lanzado un error porque columna «{boolean}» es un texto");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -468,7 +603,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0020. Tipo object.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {object} (1)",
                 "string": null,
@@ -499,7 +634,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": null,
                 "moment": null,
             }), "Debería de haber lanzado un error porque columna «{object}» es un texto");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -507,7 +642,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0025. Tipo function.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {function} (1)",
                 "string": null,
@@ -538,7 +673,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": null,
                 "moment": null,
             }), "Debería de haber lanzado un error porque columna «{function}» es un texto");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -546,7 +681,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0030. Tipo referred-object.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {referred-object} (1)",
                 "string": null,
@@ -577,7 +712,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": null,
                 "moment": null,
             }), "Debería de haber lanzado un error porque columna «{referred-object}» es un texto");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -585,7 +720,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0035. Tipo referred-array.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {referred-array} (1)",
                 "string": null,
@@ -616,7 +751,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": null,
                 "moment": null,
             }), "Debería de haber lanzado un error porque columna «{referred-array}» es un texto");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -624,7 +759,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0040. Tipo integer.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {integer} (1)",
                 "string": null,
@@ -655,7 +790,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": null,
                 "moment": null,
             }), "Debería de haber lanzado un error porque columna «{integer}» es un float");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -663,7 +798,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0045. Tipo array.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {array} (1)",
                 "string": null,
@@ -694,7 +829,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": null,
                 "moment": null,
             }), "Debería de haber lanzado un error porque columna «{array}» es un object no-array");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -702,7 +837,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0050. Tipo day.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {day} (1)",
                 "string": null,
@@ -733,7 +868,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": null,
                 "moment": null,
             }), "Debería de haber lanzado un error porque columna «{day}» es un texto pero no cumple el formato");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -741,7 +876,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0055. Tipo hour.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {hour} (1)",
                 "string": null,
@@ -772,7 +907,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": "15:00:00 ",
                 "moment": null,
             }), "Debería de haber lanzado un error porque columna «{hour}» es un texto pero no cumple el formato");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -780,7 +915,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0020. Tipos de datos/0060. Tipo moment.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Todos los tipos", {
                 "nombre de registro": "Comprobando tipo {moment} (1)",
                 "string": null,
@@ -811,7 +946,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "hour": null,
                 "moment": "2026/01/20 15:00:00 ",
             }), "Debería de haber lanzado un error porque columna «{moment}» es un texto pero no cumple el formato");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -819,7 +954,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0030. Opciones del esquema/0005. Opción de tabla - openColumns.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             await fooldb.insert("Persona", {
                 "nombre": "Persona 5",
                 "edad": 40,
@@ -831,7 +966,7 @@ window.FooldbBrowserRequire = (function(make) {
                 "fecha de nacimiento": "1991/01/11",
                 "campo extra": "valor random",
             }), "Debería haber fallado el 2o insert a Persona por no tener «openColumns:true» ahora");
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -839,7 +974,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0030. Opciones del esquema/0010. Opción de columna - nullable.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             const uid = await fooldb.insert("Todos los tipos", {
                 "cualquier campo": true,
             });
@@ -851,8 +986,7 @@ window.FooldbBrowserRequire = (function(make) {
                 const columnId = columnIds[index];
                 assertion(item[columnId] === null, `La columna «${columnId}» debería ser null ahora`);
             }
-        };
-
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -860,7 +994,7 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0040. Completaciones de cobertura/0010. Completaciones.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
+        module.exports = module.exports = async fooldb => {
             new fooldb.constructor.AssertionError("Un mensaje cualquiera");
             try {
                 fooldb.constructor.assertion(false);
@@ -917,7 +1051,7 @@ window.FooldbBrowserRequire = (function(make) {
                     throw new Error("whatever");
                 });
             }
-        };
+        };;
     });
     (function(factory) {
         const modulez = {};
@@ -925,10 +1059,75 @@ window.FooldbBrowserRequire = (function(make) {
         const exportation = modulez.exports;
         __DEFINE_MODULE__("/test/features/0050. Casos de violación de seguridad/0005. Actualizar el uid o uuid de una row.test.js", exportation);
     })(function(module) {
-        module.exports = async fooldb => {
-            // @TODO: es un caso grave.
-            // @THINK Piensa que esto es para estar seguro que sabes dónde lo dejamos.
-        };
+        module.exports = module.exports = async fooldb => {
+            const originalRegistro = await fooldb.select("Todos los tipos", row => row["nombre de registro"] === "Comprobando tipo {string} (1)");
+            await fooldb.update("Todos los tipos", row => {
+                return row["nombre de registro"] === "Comprobando tipo {string} (1)";
+            }, {
+                uid: "no debería poder sobreescribirse"
+            });
+            await fooldb.update("Todos los tipos", row => {
+                return row["nombre de registro"] === "Comprobando tipo {string} (1)";
+            }, {
+                uuid: "no debería poder sobreescribirse"
+            });
+            const finalRegistro = await fooldb.select("Todos los tipos", row => row["nombre de registro"] === "Comprobando tipo {string} (1)");
+            assertion(originalRegistro.uid === finalRegistro.uid, "Registro con nombre 'Comprobando tipo {string} (1)' debería seguir teniendo el mismo uid");
+            assertion(originalRegistro.uuid === finalRegistro.uuid, "Registro con nombre 'Comprobando tipo {string} (1)' debería seguir teniendo el mismo uuid");
+        };;
+    });
+    (function(factory) {
+        const modulez = {};
+        factory(modulez);
+        const exportation = modulez.exports;
+        __DEFINE_MODULE__("/test/features/0060. Operaciones masivas/0010. Insert masivo.test.js", exportation);
+    })(function(module) {
+        module.exports = module.exports = async fooldb => {
+
+        };;
+    });
+    (function(factory) {
+        const modulez = {};
+        factory(modulez);
+        const exportation = modulez.exports;
+        __DEFINE_MODULE__("/test/features/0060. Operaciones masivas/0020. Update masivo.test.js", exportation);
+    })(function(module) {
+        module.exports = module.exports = async fooldb => {
+
+        };;
+    });
+    (function(factory) {
+        const modulez = {};
+        factory(modulez);
+        const exportation = modulez.exports;
+        __DEFINE_MODULE__("/test/features/0060. Operaciones masivas/0030. Delete masivo.test.js", exportation);
+    })(function(module) {
+        module.exports = module.exports = async fooldb => {
+
+        };;
+    });
+    (function(factory) {
+        const modulez = {};
+        factory(modulez);
+        const exportation = modulez.exports;
+        __DEFINE_MODULE__("/test/features/0080. Alteraciones del esquema/0010. Expandir esquema.test.js", exportation);
+    })(function(module) {
+        module.exports = module.exports = async fooldb => {
+            assertion(typeof fooldb.schema.tables.Lugar.columns.capital === "undefined", "La columna Lugar.capital debería ser undefined ahora");
+            await fooldb.expandSchema({
+                tables: {
+                    Lugar: {
+                        columns: {
+                            capital: {
+                                type: "string",
+                                nullable: false,
+                            }
+                        }
+                    }
+                }
+            });
+            assertion(typeof fooldb.schema.tables.Lugar.columns.capital === "object", "La columna Lugar.capital debería ser object ahora");
+        };;
     });
 
 })

@@ -17,10 +17,10 @@ const mainTest = async function () {
     const allDatabaseIds = FooldbBrowserRequire.allModulesByOrder.filter(file => file.startsWith("/test/databases/"));
     for (let index = 0; index < allDatabaseIds.length; index++) {
       const databaseId = allDatabaseIds[index];
-      await FooldbBrowserPolyfill.fs.promises.mkdir(databaseId.replace(/\/schema\.js$/g, ""));
+      await FooldbBrowserPolyfill.fs.promises.mkdir(databaseId.replace(/\/schema\.json$/g, ""));
       const databaseSchema = await FooldbBrowserRequire(databaseId);
-      // @CAUTION: Cuidado con esta línea si más adelante metemos functions en el schema.js:
-      await FooldbBrowserPolyfill.fs.promises.writeFile(databaseId, "module.exports = " + JSON.stringify(databaseSchema, null, 2));
+      // @CAUTION: Cuidado con esta línea si más adelante metemos functions en el schema.json:
+      await FooldbBrowserPolyfill.fs.promises.writeFile(databaseId, JSON.stringify(databaseSchema, null, 2));
     }
   }
   // Y aquí ejecutamos los mismos tests de node.js en el browser:
